@@ -7,6 +7,8 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @Entity
 @Table(name = "users")
@@ -14,6 +16,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
 
     @Column(unique = true)
     @NotEmpty(message = "Name should not be empty.")
@@ -26,6 +29,13 @@ public class User {
     @Email(message = "Wrong email format.")
     private String email;
 
+    @Column(unique = true)
+    @Pattern(regexp = "^\\+?[0-9]{10,15}$", message = "Invalid phone number format. Use + and digits (10-15 symbols).")
+    private String phoneNumber;
+
     @NotEmpty(message = "Password should not be empty.")
     private String password;
+
+    @ManyToMany(mappedBy = "members")
+    private List<Group> groups;
 }
