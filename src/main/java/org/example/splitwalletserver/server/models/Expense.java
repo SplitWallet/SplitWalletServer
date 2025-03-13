@@ -2,6 +2,7 @@ package org.example.splitwalletserver.server.models;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.example.splitwalletserver.server.groups.db.Group;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

@@ -6,6 +6,9 @@ import org.example.splitwalletserver.server.dto.LoginUserDTO;
 import org.example.splitwalletserver.server.models.User;
 import org.example.splitwalletserver.server.repositories.UserRepository;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -45,6 +48,15 @@ public class UserService {
         }
 
         return status;
+    }
+
+    public User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            return findByLogin(userDetails.getUsername());
+        }
+        throw new UsernameNotFoundException("User not authenticated");
     }
 
     public User findByLogin(String username) {

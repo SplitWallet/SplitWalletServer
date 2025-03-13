@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.List;
 
-@ControllerAdvice(assignableTypes = UserController.class)
+@ControllerAdvice()
 public class ErrorHandlingControllerAdvice {
 
 	@ResponseBody
