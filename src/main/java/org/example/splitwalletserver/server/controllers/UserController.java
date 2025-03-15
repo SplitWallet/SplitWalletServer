@@ -64,7 +64,7 @@ public class UserController {
         return switch (userService.registration(user)) {
             case CONFLICT -> new ResponseEntity<>(new ErrorResponse(HttpStatus.CONFLICT.value(),
                     "Email or Name already registered"), HttpStatus.CONFLICT);
-            case CREATED -> new ResponseEntity<>(Collections.singletonMap("jwt-token", token), HttpStatus.CREATED);
+            case CREATED -> new ResponseEntity<>(Collections.singletonMap("jwtToken", token), HttpStatus.CREATED);
             default ->  new ResponseEntity<>(new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                     "Unexpected error, please generate again"), HttpStatus.INTERNAL_SERVER_ERROR);
         };
@@ -94,7 +94,7 @@ public class UserController {
     })
     public ResponseEntity<Object> loginUser(@RequestBody LoginUserDTO loginUserDTO) {
         return switch (userService.login(loginUserDTO)) {
-            case OK -> new ResponseEntity<>(Collections.singletonMap("jwt-token",
+            case OK -> new ResponseEntity<>(Collections.singletonMap("jwtToken",
                     jwtUtil.generateToken(loginUserDTO.getLogin())),
                     HttpStatus.OK);
             case NOT_FOUND -> new ResponseEntity<>(new ErrorResponse(HttpStatus.NOT_FOUND.value()
