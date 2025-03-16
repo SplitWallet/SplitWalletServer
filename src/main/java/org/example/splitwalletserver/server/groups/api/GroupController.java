@@ -11,13 +11,13 @@ import lombok.AllArgsConstructor;
 import org.example.splitwalletserver.server.groups.db.Group;
 import org.example.splitwalletserver.server.groups.domain.GroupService;
 import org.example.splitwalletserver.server.groups.request.CreateGroupRequest;
+import org.example.splitwalletserver.server.models.User;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @AllArgsConstructor
@@ -101,5 +101,27 @@ public class GroupController {
         return ResponseEntity.status(201).body(fromGroupToDTO(created));
     }
 
+    //todo документация
+    @PostMapping("{uniqueCode}/join")
+    public ResponseEntity<?> joinGroup(@PathVariable String uniqueCode) {
+        groupService.joinGroup(uniqueCode);
+        return ResponseEntity.status(201).body("Success!");
+    }
+
+    //todo документация
+    @GetMapping("/my")
+    public ResponseEntity<List<GroupDTO>> getMyGrouos() {
+        var toReturn = groupService.getMyGroups().stream().map(this::fromGroupToDTO).toList();
+        return ResponseEntity.status(201).body(toReturn);
+    }
+
+    //todo документация
+    @GetMapping("/{groupId}/members")
+    public ResponseEntity<List<UserInsensitiveInfoDTO>> getGroupMembers(@PathVariable Long groupId) {
+        var members = groupService.getMembersOfGroup(groupId).stream().map(this::fromUserToDTO).toList();
+        return ResponseEntity.ok(members);
+    }
+
     private GroupDTO fromGroupToDTO(Group group) {return modelMapper.map(group, GroupDTO.class);}
+    private UserInsensitiveInfoDTO fromUserToDTO(User user) {return modelMapper.map(user, UserInsensitiveInfoDTO.class);}
 }

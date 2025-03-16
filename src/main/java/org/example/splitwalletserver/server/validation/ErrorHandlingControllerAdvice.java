@@ -1,6 +1,8 @@
 package org.example.splitwalletserver.server.validation;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
+import org.example.splitwalletserver.server.ErrorResponse;
 import org.example.splitwalletserver.server.controllers.UserController;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -43,4 +45,17 @@ public class ErrorHandlingControllerAdvice {
 		return new ValidationErrorResponse(violations);
 	}
 
+	@ExceptionHandler(EntityNotFoundException.class)
+	@ResponseStatus(HttpStatus.NOT_FOUND)
+	@ResponseBody
+	public ErrorResponse onEntityNotFoundException(EntityNotFoundException e) {
+		return new ErrorResponse(404, e.getMessage());
+	}
+
+	@ExceptionHandler(IllegalArgumentException.class)
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ResponseBody
+	public ErrorResponse onIllegalArgumentException(IllegalArgumentException e) {
+		return new ErrorResponse(400, e.getMessage());
+	}
 }

@@ -1,5 +1,6 @@
 package org.example.splitwalletserver.server.services;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.Synchronized;
 import org.example.splitwalletserver.server.dto.LoginUserDTO;
@@ -66,5 +67,9 @@ public class UserService {
                         () -> userRepository.findByEmail(username)
                                 .orElseThrow(() -> new UsernameNotFoundException(username + " not found"))
                 );
+    }
+
+    public User findById(Long id) {
+        return userRepository.findById(id).orElseThrow(()->new EntityNotFoundException("User with id " + id + " not found"));
     }
 }

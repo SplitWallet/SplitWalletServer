@@ -13,6 +13,7 @@ import org.example.splitwalletserver.server.models.User;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -36,6 +37,9 @@ public class Group {
     @ManyToOne
     @JoinColumn(name = "user_owner_id", nullable = false)
     private User userOwner;
+
+    @Column(name = "unique_code", nullable = false, unique = true)  //todo предусмотреть уникальность повторной проверкой
+    private String uniqueCode = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
 
     @ManyToMany
     @JoinTable(

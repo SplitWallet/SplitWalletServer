@@ -15,6 +15,8 @@ import java.util.List;
 @NoArgsConstructor
 public class GroupDTO {
 
+    private Long id;
+
     private String name;
 
     private LocalDateTime createdAt;
@@ -22,10 +24,6 @@ public class GroupDTO {
     private LocalDateTime updatedAt;
 
     private UserInsensitiveInfoDTO userOwner;
-
-    private List<UserInsensitiveInfoDTO> members;
-
-    private List<Expense> events;
 
     private Boolean isClosed;
 }

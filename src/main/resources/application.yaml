@@ -5,12 +5,10 @@ spring:
     name: SplitWalletServer
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/postgres
+    url: jdbc:postgresql://localhost:5431/postgres
     username: postgres
     password: admin
   jpa:
     hibernate:
       ddl-auto: update
-
-
 jwt_secret : PukSrenc
