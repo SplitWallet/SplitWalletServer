@@ -1,4 +1,4 @@
-package org.example.splitwalletserver.server.groups.api;
+package org.example.splitwalletserver.server;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

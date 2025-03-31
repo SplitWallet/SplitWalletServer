@@ -1,9 +1,12 @@
-package org.example.splitwalletserver.server.models;
+package org.example.splitwalletserver.server.expenses;
 
 import jakarta.persistence.*;
 import lombok.Data;
 import org.example.splitwalletserver.server.groups.db.Group;
+import org.example.splitwalletserver.server.expenseUser.ExpenseUser;
+import org.example.splitwalletserver.server.models.User;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,7 +35,7 @@ public class Expense {
     private String description;
 
     @Column(nullable = false)
-    private Double amount;
+    private BigDecimal amount;
 
     @Column(nullable = false, length = 3)
     private String currency = "RUB";

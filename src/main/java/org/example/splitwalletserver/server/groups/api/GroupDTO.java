@@ -4,10 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.example.splitwalletserver.server.models.Expense;
+import org.example.splitwalletserver.server.UserInsensitiveInfoDTO;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @Builder

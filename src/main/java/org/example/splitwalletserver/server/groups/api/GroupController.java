@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.example.splitwalletserver.server.UserInsensitiveInfoDTO;
 import org.example.splitwalletserver.server.groups.db.Group;
 import org.example.splitwalletserver.server.groups.domain.GroupService;
 import org.example.splitwalletserver.server.groups.request.CreateGroupRequest;
@@ -102,6 +103,7 @@ public class GroupController {
     }
 
     //todo документация
+    //Присоединиться к группе по коду
     @PostMapping("{uniqueCode}/join")
     public ResponseEntity<?> joinGroup(@PathVariable String uniqueCode) {
         groupService.joinGroup(uniqueCode);
@@ -109,6 +111,7 @@ public class GroupController {
     }
 
     //todo документация
+    //Получить группы, в которых состоит текущий пользователь
     @GetMapping("/my")
     public ResponseEntity<List<GroupDTO>> getMyGrouos() {
         var toReturn = groupService.getMyGroups().stream().map(this::fromGroupToDTO).toList();
@@ -116,6 +119,7 @@ public class GroupController {
     }
 
     //todo документация
+    //Получить пользователей группы
     @GetMapping("/{groupId}/members")
     public ResponseEntity<List<UserInsensitiveInfoDTO>> getGroupMembers(@PathVariable Long groupId) {
         var members = groupService.getMembersOfGroup(groupId).stream().map(this::fromUserToDTO).toList();

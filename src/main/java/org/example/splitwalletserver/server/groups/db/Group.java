@@ -3,11 +3,8 @@ package org.example.splitwalletserver.server.groups.db;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.example.splitwalletserver.server.models.Expense;
+import org.example.splitwalletserver.server.expenses.Expense;
 import org.example.splitwalletserver.server.models.User;
 
 import java.time.LocalDateTime;

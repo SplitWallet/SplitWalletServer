@@ -1,7 +1,9 @@
-package org.example.splitwalletserver.server.models;
+package org.example.splitwalletserver.server.expenseUser;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.example.splitwalletserver.server.expenses.Expense;
+import org.example.splitwalletserver.server.models.User;
 
 import java.math.BigDecimal;
 
@@ -23,4 +25,7 @@ public class ExpenseUser {
 
     @Column(nullable = false)
     private BigDecimal amount; // Сколько монет должен пользователь
+
+    @Column(nullable = false)
+    private BigDecimal paid; // Сколько монет оплатил пользователь
 }
