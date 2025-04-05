@@ -68,8 +68,9 @@ public class ErrorHandlingControllerAdvice {
 	}
 
 	@ExceptionHandler(ResponseStatusException.class)
+	@ResponseStatus(HttpStatus.CONFLICT)
 	@ResponseBody
 	public ErrorResponse handleResponseStatusException(ResponseStatusException e) {
-		return new ErrorResponse(409, e.getMessage());
+		return new ErrorResponse(409, e.getReason());
 	}
 }
