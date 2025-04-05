@@ -15,7 +15,7 @@ public class ExpenseUserDto {
 
     private Long id;
 
-    private Long userId;
+    private String userId;
 
     private Long expenseId;
 

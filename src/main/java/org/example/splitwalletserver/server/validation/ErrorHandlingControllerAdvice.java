@@ -3,13 +3,13 @@ package org.example.splitwalletserver.server.validation;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.example.splitwalletserver.server.ErrorResponse;
-import org.example.splitwalletserver.server.controllers.UserController;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -20,16 +20,16 @@ public class ErrorHandlingControllerAdvice {
 	@ExceptionHandler(ConstraintViolationException.class)
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public ValidationErrorResponse onConstraintValidationException(
-					ConstraintViolationException e
+			ConstraintViolationException e
 	) {
 		final List<Violation> violations = e.getConstraintViolations().stream()
-						.map(
-										violation -> new Violation(
-														violation.getPropertyPath().toString(),
-														violation.getMessage()
-										)
+				.map(
+						violation -> new Violation(
+								violation.getPropertyPath().toString(),
+								violation.getMessage()
 						)
-						.toList();
+				)
+				.toList();
 		return new ValidationErrorResponse(violations);
 	}
 
@@ -37,11 +37,11 @@ public class ErrorHandlingControllerAdvice {
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ResponseBody
 	public ValidationErrorResponse onMethodArgumentNotValidException(
-					MethodArgumentNotValidException e
+			MethodArgumentNotValidException e
 	) {
 		final List<Violation> violations = e.getBindingResult().getFieldErrors().stream()
-						.map(error -> new Violation(error.getField(), error.getDefaultMessage()))
-						.toList();
+				.map(error -> new Violation(error.getField(), error.getDefaultMessage()))
+				.toList();
 		return new ValidationErrorResponse(violations);
 	}
 
@@ -57,5 +57,19 @@ public class ErrorHandlingControllerAdvice {
 	@ResponseBody
 	public ErrorResponse onIllegalArgumentException(IllegalArgumentException e) {
 		return new ErrorResponse(400, e.getMessage());
+	}
+
+
+	@ExceptionHandler(IllegalStateException.class)
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ResponseBody
+	public ErrorResponse onIllegalStateException(IllegalStateException e) {
+		return new ErrorResponse(400, e.getMessage());
+	}
+
+	@ExceptionHandler(ResponseStatusException.class)
+	@ResponseBody
+	public ErrorResponse handleResponseStatusException(ResponseStatusException e) {
+		return new ErrorResponse(409, e.getMessage());
 	}
 }

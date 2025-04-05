@@ -1,4 +1,4 @@
-package org.example.splitwalletserver.server.dto;
+package org.example.splitwalletserver.server.users.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

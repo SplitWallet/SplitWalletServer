@@ -1,6 +1,6 @@
-package org.example.splitwalletserver.server.security;
+package org.example.splitwalletserver.server.users.services;
 
-import org.example.splitwalletserver.server.models.User;
+import org.example.splitwalletserver.server.users.model.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,12 +22,11 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public String getPassword() {
-        return user.getPassword();
+        return "";
     }
-
     @Override
     public String getUsername() {
-        return user.getName();
+        return user.getUsername();
     }
 
     @Override

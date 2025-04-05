@@ -2,9 +2,7 @@ package org.example.splitwalletserver.server.expenseUser.api;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
-import org.example.splitwalletserver.server.expenseUser.ExpenseUser;
 import org.example.splitwalletserver.server.expenseUser.domain.ExpenseUserService;
-import org.example.splitwalletserver.server.expenses.api.ExpenseDto;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -33,7 +31,7 @@ public class ExpenseUserController {
         List<ExpenseUserDto> expenseUserDtos = expenseUserService.getExpenseUsers(groupId, expenseId)
                 .stream()
                 .map(expense -> modelMapper.map(expense, ExpenseUserDto.class))
-                .collect(Collectors.toList());
+                .toList();
         return ResponseEntity.ok().body(expenseUserDtos);
     }
 

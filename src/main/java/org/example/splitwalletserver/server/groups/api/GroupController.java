@@ -8,11 +8,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.example.splitwalletserver.server.UserInsensitiveInfoDTO;
 import org.example.splitwalletserver.server.groups.db.Group;
 import org.example.splitwalletserver.server.groups.domain.GroupService;
 import org.example.splitwalletserver.server.groups.request.CreateGroupRequest;
-import org.example.splitwalletserver.server.models.User;
+import org.example.splitwalletserver.server.users.dto.UserInsensitiveInfoDTO;
+import org.example.splitwalletserver.server.users.model.User;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -105,7 +105,7 @@ public class GroupController {
     //todo документация
     //Присоединиться к группе по коду
     @PostMapping("{uniqueCode}/join")
-    public ResponseEntity<?> joinGroup(@PathVariable String uniqueCode) {
+    public ResponseEntity<String> joinGroup(@PathVariable String uniqueCode) {
         groupService.joinGroup(uniqueCode);
         return ResponseEntity.status(201).body("Success!");
     }

@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.example.splitwalletserver.server.UserInsensitiveInfoDTO;
+import org.example.splitwalletserver.server.users.dto.UserInsensitiveInfoDTO;
 
 import java.time.LocalDateTime;
 

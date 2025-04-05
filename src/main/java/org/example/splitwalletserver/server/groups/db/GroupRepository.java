@@ -1,6 +1,6 @@
 package org.example.splitwalletserver.server.groups.db;
 
-import org.example.splitwalletserver.server.models.User;
+import org.example.splitwalletserver.server.users.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,7 +16,7 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
     Optional<Group> findById(Long id);
 
     @Query("SELECT g FROM Group g WHERE g.userOwner.id = :userId OR :userId IN (SELECT u.id FROM g.members u)")
-    List<Group> findAllByUserId(@Param("userId") Long userId);
+    List<Group> findAllByUserId(@Param("userId") String userId);
 
     @Query("SELECT g.members FROM Group g WHERE g.id = :groupId")
     List<User> findMembersByGroupId(@Param("groupId") Long groupId);

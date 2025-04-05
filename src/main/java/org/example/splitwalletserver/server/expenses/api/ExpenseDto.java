@@ -31,7 +31,7 @@ public class ExpenseDto {
 
     private String currency;
 
-    private Long userWhoCreatedId;
+    private String userWhoCreatedId;
 
     private Boolean isActive;
 

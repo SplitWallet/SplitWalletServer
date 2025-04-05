@@ -2,14 +2,14 @@ package org.example.splitwalletserver.server.expenses.domain;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
-import org.example.splitwalletserver.server.expenses.Expense;
+import org.example.splitwalletserver.server.expenseUser.db.ExpenseUser;
+import org.example.splitwalletserver.server.expenses.db.Expense;
 import org.example.splitwalletserver.server.expenses.db.ExpenseRepository;
 import org.example.splitwalletserver.server.expenses.request.CreateExpenseRequest;
 import org.example.splitwalletserver.server.groups.db.Group;
 import org.example.splitwalletserver.server.groups.db.GroupRepository;
-import org.example.splitwalletserver.server.expenseUser.ExpenseUser;
-import org.example.splitwalletserver.server.models.User;
-import org.example.splitwalletserver.server.services.UserService;
+import org.example.splitwalletserver.server.users.services.UserServiceImpl;
+import org.example.splitwalletserver.server.users.model.User;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -21,7 +21,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ExpenseService {
     private final ExpenseRepository expenseRepository;
-    private final UserService userService;
+    private final UserServiceImpl keycloakUserService;
     private final GroupRepository groupRepository;
 
     //На вид не очень продумано, это временно. Кто знает, как лучше, делайте
@@ -54,8 +54,9 @@ public class ExpenseService {
 
     public Expense createExpense(CreateExpenseRequest createExpenseRequest, Long groupId) {
         var toSave = new Expense();
-        var group = groupRepository.findById(groupId).orElseThrow(() -> new EntityNotFoundException("Group with id " + groupId + " not found"));
-        var currentUser = userService.getCurrentUser();
+        var group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new EntityNotFoundException("Group with id " + groupId + " not found"));
+        var currentUser = keycloakUserService.getCurrentUser();
         if (!group.getMembers().stream().map(User::getId)
                 .toList().contains(currentUser.getId())) {
             throw new IllegalArgumentException("You don't member of group with id " + groupId);
@@ -83,7 +84,7 @@ public class ExpenseService {
     public List<Expense> getExpenses(Long groupId) {
         var group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new EntityNotFoundException("Group with id " + groupId + " not found"));
-        var currentUser = userService.getCurrentUser();
+        var currentUser = keycloakUserService.getCurrentUser();
         if (!group.getMembers().stream().map(User::getId)
                 .toList().contains(currentUser.getId())) {
             throw new IllegalArgumentException("You don't member of group with id " + groupId);

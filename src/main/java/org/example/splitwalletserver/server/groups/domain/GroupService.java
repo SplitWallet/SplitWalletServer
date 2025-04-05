@@ -2,11 +2,11 @@ package org.example.splitwalletserver.server.groups.domain;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
-import org.example.splitwalletserver.server.groups.request.CreateGroupRequest;
 import org.example.splitwalletserver.server.groups.db.Group;
 import org.example.splitwalletserver.server.groups.db.GroupRepository;
-import org.example.splitwalletserver.server.models.User;
-import org.example.splitwalletserver.server.services.UserService;
+import org.example.splitwalletserver.server.groups.request.CreateGroupRequest;
+import org.example.splitwalletserver.server.users.services.UserServiceImpl;
+import org.example.splitwalletserver.server.users.model.User;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,14 +16,14 @@ import java.util.List;
 public class GroupService {
 
     private final GroupRepository groupRepository;
-    private final UserService userService;
+    private final UserServiceImpl keycloakUserService;
     private final Integer maxSizeOfGroup = 50;
 
     public Group createGroup(CreateGroupRequest groupForm) {
         var toSave = new Group();
         toSave.setName(groupForm.getName());
-        toSave.setUserOwner(userService.getCurrentUser());
-        toSave.getMembers().add(userService.getCurrentUser());
+        toSave.setUserOwner(keycloakUserService.getCurrentUser());
+        toSave.getMembers().add(keycloakUserService.getCurrentUser());
         return groupRepository.save(toSave);
     }
 
@@ -31,7 +31,7 @@ public class GroupService {
         var toJoin = groupRepository.findByUniqueCode(uniqueCode)
                 .orElseThrow(()-> new EntityNotFoundException("Group with code " + uniqueCode+ " not found"));
 
-        var currentUser = userService.getCurrentUser();
+        var currentUser = keycloakUserService.getCurrentUser();
         if (currentUser.getId().equals(toJoin.getUserOwner().getId())) {
             throw new IllegalArgumentException("Owner cannot join to group");
         }
@@ -51,19 +51,18 @@ public class GroupService {
     }
 
     public List<Group> getMyGroups() {
-        var currentUser = userService.getCurrentUser();
+        var currentUser = keycloakUserService.getCurrentUser();
         return groupRepository.findAllByUserId(currentUser.getId());
     }
 
     public List<User> getMembersOfGroup(Long groupId) {
         var foundedGroup = groupRepository.findById(groupId)
                 .orElseThrow(()-> new EntityNotFoundException("Group with id " + groupId + " not found"));
-        var currentUser = userService.getCurrentUser();
+        var currentUser = keycloakUserService.getCurrentUser();
         if (!isUserMemberOfGroup(foundedGroup, currentUser)) {
             throw new IllegalArgumentException("Permission denied. You do not member of the group");
         }
-        var users = groupRepository.findMembersByGroupId(groupId);
-        return users;
+        return groupRepository.findMembersByGroupId(groupId);
     }
 
     private boolean isUserMemberOfGroup(Group group, User user) {

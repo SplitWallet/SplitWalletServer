@@ -1,10 +1,10 @@
-package org.example.splitwalletserver.server.expenses;
+package org.example.splitwalletserver.server.expenses.db;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.example.splitwalletserver.server.expenseUser.db.ExpenseUser;
 import org.example.splitwalletserver.server.groups.db.Group;
-import org.example.splitwalletserver.server.expenseUser.ExpenseUser;
-import org.example.splitwalletserver.server.models.User;
+import org.example.splitwalletserver.server.users.model.User;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

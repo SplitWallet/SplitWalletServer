@@ -1,4 +1,4 @@
-package org.example.splitwalletserver.server;
+package org.example.splitwalletserver.server.users.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserInsensitiveInfoDTO {
 
-    private Long id;
+    private String id;
 
     private String name;
 

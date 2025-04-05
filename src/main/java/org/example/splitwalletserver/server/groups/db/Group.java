@@ -4,8 +4,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-import org.example.splitwalletserver.server.expenses.Expense;
-import org.example.splitwalletserver.server.models.User;
+import org.example.splitwalletserver.server.expenses.db.Expense;
+import org.example.splitwalletserver.server.users.model.User;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -29,7 +29,7 @@ public class Group {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt = LocalDateTime.now();;
+    private LocalDateTime updatedAt = LocalDateTime.now();
 
     @ManyToOne
     @JoinColumn(name = "user_owner_id", nullable = false)
@@ -42,7 +42,7 @@ public class Group {
     @JoinTable(
             name = "group_members",
             joinColumns = @JoinColumn(name = "group_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
+            inverseJoinColumns = @JoinColumn(name = "user_entity_id")
     )
     private List<User> members = new ArrayList<>();
 

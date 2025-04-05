@@ -1,9 +1,9 @@
-package org.example.splitwalletserver.server.expenseUser;
+package org.example.splitwalletserver.server.expenseUser.db;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import org.example.splitwalletserver.server.expenses.Expense;
-import org.example.splitwalletserver.server.models.User;
+import org.example.splitwalletserver.server.expenses.db.Expense;
+import org.example.splitwalletserver.server.users.model.User;
 
 import java.math.BigDecimal;
 
@@ -16,7 +16,7 @@ public class ExpenseUser {
     private Long id; // Уникальный идентификатор связи
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_entity_id", nullable = false)
     private User user; // Пользователь, который должен оплатить часть расхода
 
     @ManyToOne

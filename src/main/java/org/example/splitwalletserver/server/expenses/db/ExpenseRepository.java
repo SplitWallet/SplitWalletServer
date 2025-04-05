@@ -1,6 +1,5 @@
 package org.example.splitwalletserver.server.expenses.db;
 
-import org.example.splitwalletserver.server.expenses.Expense;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
