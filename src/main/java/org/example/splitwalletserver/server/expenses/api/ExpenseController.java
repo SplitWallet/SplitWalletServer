@@ -25,7 +25,7 @@ public class ExpenseController {
 
     private final ExpenseService expenseService;
 
-    private final UserServiceImpl keycloakUserService;
+    private final UserServiceImpl userService;
 
     @GetMapping("{groupId}/expenses")
     public ResponseEntity<List<ExpenseDto>> getExpenses(@PathVariable Long groupId) {
@@ -47,7 +47,7 @@ public class ExpenseController {
     private ExpenseDto fromExpenseToExpenseDto(Expense expense) {
         var expenseDto = modelMapper.map(expense, ExpenseDto.class);
         var amount = expense.getExpenseUsers().stream().filter(eu ->
-                        eu.getUser().getId().equals(keycloakUserService.getCurrentUser().getId()))
+                        eu.getUser().getId().equals(userService.getCurrentUser().getId()))
                 .findFirst().orElseThrow(()->new RuntimeException("Error!!!")).getAmount();
         expenseDto.setCurrentUserPaid(amount);
         return expenseDto;

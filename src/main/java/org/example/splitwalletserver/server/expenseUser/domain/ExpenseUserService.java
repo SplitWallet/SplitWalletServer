@@ -17,12 +17,12 @@ import java.util.List;
 @AllArgsConstructor
 public class ExpenseUserService {
     private final ExpenseUserRepository expenseUserRepository;
-    private final UserServiceImpl keycloakUserService;
+    private final UserServiceImpl userService;
     private final GroupRepository groupRepository;
     private final ExpenseRepository expenseRepository;
 
     public List<ExpenseUser> getExpenseUsers(Long groupId, Long expenseId) {
-        var currentUser = keycloakUserService.getCurrentUser();
+        var currentUser = userService.getCurrentUser();
         var group = groupRepository.findById(groupId).orElseThrow(() -> new EntityNotFoundException("Group with id " + groupId + " not found"));
         if (!group.getMembers().stream().map(User::getId)
                 .toList().contains(currentUser.getId())) {

@@ -17,16 +17,16 @@ import org.example.splitwalletserver.server.users.dto.UserDTO;
 @Validated
 @Tag(name = "User", description = "Operations about user")
 public class UserController {
-    private final UserServiceImpl keycloakUserService;
+    private final UserServiceImpl userService;
 
     @PostMapping("/registration")
     @Operation(summary = "Создать нового пользователя",
             description = "Регистрация нового пользователя в системе.")
     public ResponseEntity<Object> addUser(@RequestBody @Valid UserDTO userDTO) {
 
-        keycloakUserService.createUser(userDTO);
+        userService.createUser(userDTO);
         return new ResponseEntity<>(
-                keycloakUserService.login(new LoginUserDTO(userDTO.getName(),userDTO.getPassword())),
+                userService.login(new LoginUserDTO(userDTO.getName(),userDTO.getPassword())),
                 HttpStatus.CREATED
         );
     }
@@ -36,7 +36,7 @@ public class UserController {
             description = "Аутентификация пользователя с использованием логина и пароля.")
     public ResponseEntity<Object> loginUser(@RequestBody LoginUserDTO loginUserDTO) {
         return new ResponseEntity<>(
-                keycloakUserService.login(loginUserDTO),
+                userService.login(loginUserDTO),
                 HttpStatus.CREATED
         );
     }
@@ -44,6 +44,6 @@ public class UserController {
 
     @DeleteMapping("/{userId}")
     public void deleteUserById(@PathVariable String userId) {
-        keycloakUserService.deleteUserById(userId);
+        userService.deleteUserById(userId);
     }
 }

@@ -1,7 +1,9 @@
 package org.example.splitwalletserver.server.users.services;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.ws.rs.ClientErrorException;
 import jakarta.ws.rs.NotAuthorizedException;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.core.Response;
 import org.example.splitwalletserver.server.config.KeycloakAdminClientProperties;
@@ -35,6 +37,7 @@ public class UserServiceImpl implements UserService {
     private final Keycloak keycloak;
 
     private final KeycloakAdminClientProperties keycloakAdminClientProperties;
+
     private final UserRepository userRepository;
 
     static Logger logger = Logger.getLogger(String.valueOf(UserServiceImpl.class));
@@ -105,7 +108,8 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Network error occurred. Please contact the developer!");
         }
     }
-        private UsersResource getUsersResource() {
+
+    private UsersResource getUsersResource() {
         RealmResource realm1 = keycloak.realm(realm);
         return realm1.users();
     }
@@ -115,12 +119,15 @@ public class UserServiceImpl implements UserService {
         return  getUsersResource().get(userId).toRepresentation();
     }
 
-    //TODO обработать ошибки
     @Override
     public void deleteUserById(String userId) {
-        try (Response delete = getUsersResource().delete(userId)){}
+        try (Response delete = getUsersResource().delete(userId)){
+            if (delete.getStatus() != 204)
+                throw new IllegalArgumentException("Failed to delete user with id " + userId);
+        } catch (NotFoundException e) {
+            throw new EntityNotFoundException("User with id " + userId + " not found");
+        }
     }
-
 
     public User getCurrentUser() {
         JwtAuthenticationToken authentication =

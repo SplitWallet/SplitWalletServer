@@ -21,7 +21,9 @@ import java.util.List;
 @AllArgsConstructor
 public class ExpenseService {
     private final ExpenseRepository expenseRepository;
-    private final UserServiceImpl keycloakUserService;
+
+    private final UserServiceImpl userService;
+
     private final GroupRepository groupRepository;
 
     //На вид не очень продумано, это временно. Кто знает, как лучше, делайте
@@ -56,7 +58,7 @@ public class ExpenseService {
         var toSave = new Expense();
         var group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new EntityNotFoundException("Group with id " + groupId + " not found"));
-        var currentUser = keycloakUserService.getCurrentUser();
+        var currentUser = userService.getCurrentUser();
         if (!group.getMembers().stream().map(User::getId)
                 .toList().contains(currentUser.getId())) {
             throw new IllegalArgumentException("You don't member of group with id " + groupId);
@@ -84,7 +86,7 @@ public class ExpenseService {
     public List<Expense> getExpenses(Long groupId) {
         var group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new EntityNotFoundException("Group with id " + groupId + " not found"));
-        var currentUser = keycloakUserService.getCurrentUser();
+        var currentUser = userService.getCurrentUser();
         if (!group.getMembers().stream().map(User::getId)
                 .toList().contains(currentUser.getId())) {
             throw new IllegalArgumentException("You don't member of group with id " + groupId);

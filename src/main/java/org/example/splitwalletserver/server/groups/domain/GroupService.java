@@ -16,14 +16,14 @@ import java.util.List;
 public class GroupService {
 
     private final GroupRepository groupRepository;
-    private final UserServiceImpl keycloakUserService;
+    private final UserServiceImpl userService;
     private final Integer maxSizeOfGroup = 50;
 
     public Group createGroup(CreateGroupRequest groupForm) {
         var toSave = new Group();
         toSave.setName(groupForm.getName());
-        toSave.setUserOwner(keycloakUserService.getCurrentUser());
-        toSave.getMembers().add(keycloakUserService.getCurrentUser());
+        toSave.setUserOwner(userService.getCurrentUser());
+        toSave.getMembers().add(userService.getCurrentUser());
         return groupRepository.save(toSave);
     }
 
@@ -31,7 +31,7 @@ public class GroupService {
         var toJoin = groupRepository.findByUniqueCode(uniqueCode)
                 .orElseThrow(()-> new EntityNotFoundException("Group with code " + uniqueCode+ " not found"));
 
-        var currentUser = keycloakUserService.getCurrentUser();
+        var currentUser = userService.getCurrentUser();
         if (currentUser.getId().equals(toJoin.getUserOwner().getId())) {
             throw new IllegalArgumentException("Owner cannot join to group");
         }
@@ -51,14 +51,14 @@ public class GroupService {
     }
 
     public List<Group> getMyGroups() {
-        var currentUser = keycloakUserService.getCurrentUser();
+        var currentUser = userService.getCurrentUser();
         return groupRepository.findAllByUserId(currentUser.getId());
     }
 
     public List<User> getMembersOfGroup(Long groupId) {
         var foundedGroup = groupRepository.findById(groupId)
                 .orElseThrow(()-> new EntityNotFoundException("Group with id " + groupId + " not found"));
-        var currentUser = keycloakUserService.getCurrentUser();
+        var currentUser = userService.getCurrentUser();
         if (!isUserMemberOfGroup(foundedGroup, currentUser)) {
             throw new IllegalArgumentException("Permission denied. You do not member of the group");
         }
