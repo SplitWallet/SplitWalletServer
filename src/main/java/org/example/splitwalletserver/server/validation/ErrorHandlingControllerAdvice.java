@@ -2,6 +2,7 @@ package org.example.splitwalletserver.server.validation;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
+import jakarta.ws.rs.NotAuthorizedException;
 import org.example.splitwalletserver.server.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -70,7 +71,14 @@ public class ErrorHandlingControllerAdvice {
 	@ExceptionHandler(ResponseStatusException.class)
 	@ResponseStatus(HttpStatus.CONFLICT)
 	@ResponseBody
-	public ErrorResponse handleResponseStatusException(ResponseStatusException e) {
+	public ErrorResponse onResponseStatusException(ResponseStatusException e) {
 		return new ErrorResponse(409, e.getReason());
+	}
+
+	@ExceptionHandler(NotAuthorizedException.class)
+	@ResponseStatus(HttpStatus.UNAUTHORIZED)
+	@ResponseBody
+	public ErrorResponse onNotAuthorizedException(NotAuthorizedException e) {
+		return new ErrorResponse(409, e.getMessage());
 	}
 }

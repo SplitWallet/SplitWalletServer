@@ -1,17 +1,19 @@
 package org.example.splitwalletserver.server.users.services;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityNotFoundException;
+import jakarta.ws.rs.ClientErrorException;
+import jakarta.ws.rs.NotAuthorizedException;
+import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.core.Response;
-import lombok.extern.slf4j.Slf4j;
 import org.example.splitwalletserver.server.config.KeycloakAdminClientProperties;
 import org.example.splitwalletserver.server.users.dto.LoginUserDTO;
 import org.example.splitwalletserver.server.users.dto.UserDTO;
 import org.example.splitwalletserver.server.users.model.User;
 import org.example.splitwalletserver.server.users.repositories.UserRepository;
 import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.UsersResource;
+import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,27 +23,18 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URLEncoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 @Service
-@Slf4j
 public class UserServiceImpl implements UserService {
 
     @Value("${keycloak.realm}")
     private String realm;
 
-    private Keycloak keycloak;
+    private final Keycloak keycloak;
 
-    private static KeycloakAdminClientProperties keycloakAdminClientProperties;
+    private final KeycloakAdminClientProperties keycloakAdminClientProperties;
     private final UserRepository userRepository;
 
     static Logger logger = Logger.getLogger(String.valueOf(UserServiceImpl.class));
@@ -64,8 +57,11 @@ public class UserServiceImpl implements UserService {
             }
             else if (Objects.equals(409, response.getStatus()))
                 throw new ResponseStatusException(HttpStatus.CONFLICT,"This user already exists!");
+            else {
+                logger.warning("/createUser undocumented response code: " + response.getStatus());
+                throw new IllegalArgumentException("Unknown error");
+            }
         }
-        throw new IllegalArgumentException("Unknown error");
     }
 
     private static UserRepresentation getUserRepresentation(UserDTO user) {
@@ -85,48 +81,31 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<String> login(LoginUserDTO loginUserDTO) {
-        HttpResponse<String> response;
-        try (HttpClient httpClient = HttpClient.newHttpClient()) {
-            response = httpClient.send(
-                    HttpRequest.newBuilder()
-                            .uri(URI.create(keycloakAdminClientProperties.getUrl() +
-                                    "/realms/" + keycloakAdminClientProperties.getRealm() + "/protocol/openid-connect/token"))
-                            .header("Content-Type", "application/x-www-form-urlencoded")
-                            .POST(HttpRequest.BodyPublishers.ofString(
-                                    Map.of(
-                                                    "client_id", keycloakAdminClientProperties.getClientId(),
-                                                    "client_secret", keycloakAdminClientProperties.getSecret(),
-                                                    "grant_type", "password",
-                                                    "username", loginUserDTO.getLogin(),
-                                                    "password", loginUserDTO.getPassword()
-                                            )
-                                            .entrySet().stream().map(entry ->
-                                                    URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8) + "="
-                                                            + URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8))
-                                            .collect(Collectors.joining("&"))
-                            ))
-                            .build(),
-                    HttpResponse.BodyHandlers.ofString()
-            );
-            if (response.statusCode() == HttpStatus.OK.value()) {
-                String res = new ObjectMapper().readTree(response.body()).get("access_token").asText();
-                return Optional.ofNullable(res);
-            }
-            else
-                throw new EntityNotFoundException("Wrong login or password");
-        } catch (IOException e) {
-            logger.warning(e.getMessage());
-        } catch (InterruptedException e) {
-            logger.warning(e.getMessage());
-            Thread.currentThread().interrupt();
+    public AccessTokenResponse login(LoginUserDTO loginUserDTO) {
+        try (
+                Keycloak localKeycloak  = KeycloakBuilder.builder()
+                        .serverUrl(keycloakAdminClientProperties.getUrl())
+                        .realm(realm)
+                        .grantType("password")
+                        .clientId(keycloakAdminClientProperties.getClientId())
+                        .clientSecret(keycloakAdminClientProperties.getSecret())
+                        .username(loginUserDTO.getLogin())
+                        .password(loginUserDTO.getPassword())
+                        .build()
+        ) {
+            return localKeycloak.tokenManager().getAccessToken();
         }
-        throw new IllegalArgumentException("Unexpected error, please generate again");
+        catch (NotAuthorizedException e){
+            throw new NotAuthorizedException("Incorrect login or password");
+        }catch (ClientErrorException e){
+            logger.warning(e.getMessage());
+            throw new IllegalArgumentException("Invalid client configuration. Please contact the developer!");
+        }catch (ProcessingException e) {
+            logger.warning(e.getMessage());
+            throw new IllegalArgumentException("Network error occurred. Please contact the developer!");
+        }
     }
-
-
-
-    private UsersResource getUsersResource() {
+        private UsersResource getUsersResource() {
         RealmResource realm1 = keycloak.realm(realm);
         return realm1.users();
     }
@@ -136,9 +115,10 @@ public class UserServiceImpl implements UserService {
         return  getUsersResource().get(userId).toRepresentation();
     }
 
+    //TODO обработать ошибки
     @Override
     public void deleteUserById(String userId) {
-        getUsersResource().delete(userId);
+        try (Response delete = getUsersResource().delete(userId)){}
     }
 
 

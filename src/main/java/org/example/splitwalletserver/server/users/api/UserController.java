@@ -11,16 +11,12 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.example.splitwalletserver.server.users.dto.LoginUserDTO;
 import org.example.splitwalletserver.server.users.dto.UserDTO;
-import org.example.splitwalletserver.server.users.services.UserService;
-
-import java.util.Collections;
 
 @RestController
 @AllArgsConstructor
 @Validated
 @Tag(name = "User", description = "Operations about user")
 public class UserController {
-    private final UserService userService;
     private final UserServiceImpl keycloakUserService;
 
     @PostMapping("/registration")
@@ -30,10 +26,9 @@ public class UserController {
 
         keycloakUserService.createUser(userDTO);
         return new ResponseEntity<>(
-                Collections.
-                        singletonMap("jwtToken",keycloakUserService.login
-                                (new LoginUserDTO(userDTO.getName(),userDTO.getPassword()))),
-                HttpStatus.CREATED);
+                keycloakUserService.login(new LoginUserDTO(userDTO.getName(),userDTO.getPassword())),
+                HttpStatus.CREATED
+        );
     }
 
     @PostMapping("/login")
@@ -41,9 +36,9 @@ public class UserController {
             description = "Аутентификация пользователя с использованием логина и пароля.")
     public ResponseEntity<Object> loginUser(@RequestBody LoginUserDTO loginUserDTO) {
         return new ResponseEntity<>(
-                Collections.
-                        singletonMap("jwtToken",keycloakUserService.login(loginUserDTO)),
-                HttpStatus.CREATED);
+                keycloakUserService.login(loginUserDTO),
+                HttpStatus.CREATED
+        );
     }
 
 
