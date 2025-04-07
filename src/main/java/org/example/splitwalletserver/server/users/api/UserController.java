@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 import org.example.splitwalletserver.server.users.dto.LoginUserDTO;
 import org.example.splitwalletserver.server.users.dto.UserDTO;
 
+import java.util.Collections;
+
 @RestController
 @AllArgsConstructor
 @Validated
@@ -26,7 +28,9 @@ public class UserController {
 
         userService.createUser(userDTO);
         return new ResponseEntity<>(
-                userService.login(new LoginUserDTO(userDTO.getName(),userDTO.getPassword())),
+                Collections.
+                        singletonMap("jwtToken",userService.login
+                                (new LoginUserDTO(userDTO.getName(),userDTO.getPassword())).getToken()),
                 HttpStatus.CREATED
         );
     }
@@ -36,7 +40,9 @@ public class UserController {
             description = "Аутентификация пользователя с использованием логина и пароля.")
     public ResponseEntity<Object> loginUser(@RequestBody LoginUserDTO loginUserDTO) {
         return new ResponseEntity<>(
-                userService.login(loginUserDTO),
+                Collections.
+                        singletonMap("jwtToken",userService.login
+                                (new LoginUserDTO(loginUserDTO.getLogin(),loginUserDTO.getPassword())).getToken()),
                 HttpStatus.CREATED
         );
     }
