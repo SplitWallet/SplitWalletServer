@@ -102,25 +102,25 @@ public class GroupController {
         return ResponseEntity.status(201).body(fromGroupToDTO(created));
     }
 
-    //todo документация
-    //Присоединиться к группе по коду
     @PostMapping("{uniqueCode}/join")
+    @Operation(summary = "Присоединиться к группе по коду",
+            description = "Позволяет текущему аутентифицированному пользователю присоединиться к группе, используя уникальный код группы.")
     public ResponseEntity<String> joinGroup(@PathVariable String uniqueCode) {
         groupService.joinGroup(uniqueCode);
         return ResponseEntity.status(201).body("Success!");
     }
 
-    //todo документация
-    //Получить группы, в которых состоит текущий пользователь
     @GetMapping("/my")
+    @Operation(summary = "Получить группы по пользователю",
+            description = "Получить группы, в которых состоит текущий пользователь. Получиться свои группы может только  аутентифицированный пользователь.")
     public ResponseEntity<List<GroupDTO>> getMyGrouos() {
         var toReturn = groupService.getMyGroups().stream().map(this::fromGroupToDTO).toList();
         return ResponseEntity.status(201).body(toReturn);
     }
 
-    //todo документация
-    //Получить пользователей группы
     @GetMapping("/{groupId}/members")
+    @Operation(summary = "Получить группы пользователя",
+            description = "Возвращает список всех групп, в которых состоит текущий аутентифицированный пользователь.")
     public ResponseEntity<List<UserInsensitiveInfoDTO>> getGroupMembers(@PathVariable Long groupId) {
         var members = groupService.getMembersOfGroup(groupId).stream().map(this::fromUserToDTO).toList();
         return ResponseEntity.ok(members);

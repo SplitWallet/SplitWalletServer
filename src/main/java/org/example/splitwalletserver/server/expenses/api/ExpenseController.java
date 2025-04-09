@@ -1,5 +1,6 @@
 package org.example.splitwalletserver.server.expenses.api;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -17,7 +18,7 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 @Validated
-@RequestMapping("/groups")
+@RequestMapping("/groups/{groupId}/expenses")
 @Tag(name = "Expense", description = "Operations about expenses")
 public class ExpenseController {
 
@@ -27,7 +28,13 @@ public class ExpenseController {
 
     private final UserServiceImpl userService;
 
-    @GetMapping("{groupId}/expenses")
+    @Operation(
+            summary = "Получить все расходы группы",
+            description = "Возвращает список всех расходов в указанной группе. " +
+                    "Для каждого расхода показывает сумму, которую должен текущий пользователь. " +
+                    "Доступно только для участников группы."
+    )
+    @GetMapping()
     public ResponseEntity<List<ExpenseDto>> getExpenses(@PathVariable Long groupId) {
         List<Expense> expenses = expenseService.getExpenses(groupId);
         List<ExpenseDto> expenseDtos = expenses.stream()
@@ -36,7 +43,14 @@ public class ExpenseController {
         return ResponseEntity.status(201).body(expenseDtos);
     }
 
-    @PostMapping("{groupId}/expenses")
+    @Operation(
+            summary = "Создать новый расход",
+            description = "Создает новый расход в указанной группе. " +
+                    "Сумма автоматически распределяется между всеми участниками группы равными долями. " +
+                    "Создатель расхода автоматически отмечается как оплативший свою долю. " +
+                    "Доступно только для участников группы."
+    )
+    @PostMapping()
     public ResponseEntity<ExpenseDto> createExpense(@PathVariable Long groupId,
                                                     @RequestBody @Valid CreateExpenseRequest createExpenseRequest) {
         var returned = expenseService.createExpense(createExpenseRequest, groupId);
