@@ -18,6 +18,7 @@ import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -40,12 +41,16 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
 
+    private final ModelMapper modelMapper;
+
     static Logger logger = Logger.getLogger(String.valueOf(UserServiceImpl.class));
 
-    public UserServiceImpl(Keycloak keycloak, UserRepository userRepository, KeycloakAdminClientProperties keycloakAdminClientProperties) {
+    public UserServiceImpl(Keycloak keycloak, UserRepository userRepository,
+                           KeycloakAdminClientProperties keycloakAdminClientProperties, ModelMapper modelMapper) {
         this.keycloak = keycloak;
         this.userRepository = userRepository;
         this.keycloakAdminClientProperties = keycloakAdminClientProperties;
+        this.modelMapper = modelMapper;
     }
 
     @Override
@@ -115,8 +120,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserRepresentation getUserById(String userId) {
-        return  getUsersResource().get(userId).toRepresentation();
+    public User getUserById(String userId) {
+        return  fromUserRepresentationToUser(getUsersResource().get(userId).toRepresentation());
     }
 
     @Override
@@ -138,4 +143,6 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByEmail(username)
                 .orElseThrow(() -> new IllegalStateException("User not found for the given username"));
     }
+
+    private User fromUserRepresentationToUser(UserRepresentation userRepresentation) {return modelMapper.map(userRepresentation, User.class);}
 }
