@@ -140,7 +140,17 @@ public class GroupController {
                     "Получить список пользователей может только  аутентифицированный пользователь член этой группы.")
     public ResponseEntity<List<UserInsensitiveInfoDTO>> getGroupMembers(@PathVariable Long groupId) {
         var members = groupService.getMembersOfGroup(groupId).stream().map(this::fromUserToDTO).toList();
-        return ResponseEntity.ok(members);
+        return ResponseEntity.status(201).body(members);
+    }
+
+    @DeleteMapping("/{groupId}/members/{userId}")
+    @Operation(summary = "Удалить пользователя группы",
+            description = "Удалить пользователя группы по id. " +
+                    "Получить список пользователей может только  аутентифицированный пользователь член этой группы.")
+    public ResponseEntity<String> deleteGroupMembers(@PathVariable Long groupId,
+                                                                           @PathVariable String userId) {
+        groupService.deleteMembersOfGroup(groupId, userId);
+        return ResponseEntity.status(201).body("Success!!!");
     }
 
     private GroupDTO fromGroupToDTO(Group group) {return modelMapper.map(group, GroupDTO.class);}

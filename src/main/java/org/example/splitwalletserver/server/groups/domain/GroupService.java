@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import org.example.splitwalletserver.server.groups.db.Group;
 import org.example.splitwalletserver.server.groups.db.GroupRepository;
 import org.example.splitwalletserver.server.groups.request.CreateGroupRequest;
+import org.example.splitwalletserver.server.users.repositories.UserRepository;
 import org.example.splitwalletserver.server.users.services.UserServiceImpl;
 import org.example.splitwalletserver.server.users.model.User;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,8 @@ import java.util.List;
 public class GroupService {
 
     private final GroupRepository groupRepository;
+    private final UserRepository userRepository;
+
     private final UserServiceImpl userService;
     private final Integer maxSizeOfGroup = 50;
 
@@ -86,6 +89,33 @@ public class GroupService {
             throw new IllegalArgumentException("Permission denied. You do not member of the group");
         }
         return groupRepository.findMembersByGroupId(groupId);
+    }
+
+    public void deleteMembersOfGroup(Long groupId, String userId) {
+        var foundedGroup = groupRepository.findById(groupId)
+                .orElseThrow(()-> new EntityNotFoundException("Group with id " + groupId + " not found"));
+        var currentUser = userService.getCurrentUser();
+        if (!isUserMemberOfGroup(foundedGroup, currentUser)) {
+            throw new IllegalArgumentException("Permission denied. You do not member of the group");
+        }
+
+        var userToDelete = userRepository.findById(userId);
+        if (userToDelete.isEmpty()){
+            throw new IllegalArgumentException("User " + userId + " not found");
+        }
+        if (!isUserMemberOfGroup(foundedGroup, userToDelete.get())) {
+            throw new IllegalArgumentException("Permission denied. This user do not member of the group");
+        }
+
+
+        if (userToDelete.get().equals(foundedGroup.getUserOwner())) {
+            throw new IllegalArgumentException("Unable to remove group owner");
+        }
+
+
+        var toDelGroup = foundedGroup;
+        toDelGroup.getMembers().remove(userToDelete.get());
+        groupRepository.save(toDelGroup);
     }
 
     private boolean isUserMemberOfGroup(Group group, User user) {
