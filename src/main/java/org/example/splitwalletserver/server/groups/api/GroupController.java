@@ -110,17 +110,34 @@ public class GroupController {
         return ResponseEntity.status(201).body("Success!");
     }
 
+    @PatchMapping("{groupId}/close")
+    @Operation(summary = "Закрыть группу",
+            description = "Позволяет аутентифицированному владельцу группы, закрыть ее")
+    public ResponseEntity<String> closeGroup(@PathVariable Long groupId) {
+        groupService.closeGroup(groupId);
+        return ResponseEntity.status(201).body("Success!");
+    }
+
+    @DeleteMapping("{groupId}")
+    @Operation(summary = "Удалить группу",
+            description = "Позволяет аутентифицированному владельцу группы, удалить ее.")
+    public ResponseEntity<String> deleteGroup(@PathVariable Long groupId) {
+        groupService.deleteGroup(groupId);
+        return ResponseEntity.status(201).body("Success!");
+    }
+
     @GetMapping("/my")
     @Operation(summary = "Получить группы по пользователю",
-            description = "Получить группы, в которых состоит текущий пользователь. Получиться свои группы может только  аутентифицированный пользователь.")
+            description = "Получить группы, в которых состоит текущий пользователь. Получить свои группы может только  аутентифицированный пользователь.")
     public ResponseEntity<List<GroupDTO>> getMyGrouos() {
         var toReturn = groupService.getMyGroups().stream().map(this::fromGroupToDTO).toList();
         return ResponseEntity.status(201).body(toReturn);
     }
 
     @GetMapping("/{groupId}/members")
-    @Operation(summary = "Получить группы пользователя",
-            description = "Возвращает список всех групп, в которых состоит текущий аутентифицированный пользователь.")
+    @Operation(summary = "Получить всех пользователей группы",
+            description = "Возвращает список всех пользователей в выбранный группе. " +
+                    "Получить список пользователей может только  аутентифицированный пользователь член этой группы.")
     public ResponseEntity<List<UserInsensitiveInfoDTO>> getGroupMembers(@PathVariable Long groupId) {
         var members = groupService.getMembersOfGroup(groupId).stream().map(this::fromUserToDTO).toList();
         return ResponseEntity.ok(members);

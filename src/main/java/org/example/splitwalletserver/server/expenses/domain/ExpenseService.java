@@ -64,6 +64,10 @@ public class ExpenseService {
             throw new IllegalArgumentException("You don't member of group with id " + groupId);
         }
 
+        if (Boolean.TRUE.equals(group.getIsClosed())) {
+            throw new IllegalArgumentException("This group is closed");
+        }
+
         toSave.setAmount(createExpenseRequest.getAmount());
         toSave.setDescription(createExpenseRequest.getDescription());
         toSave.setUpdatedAt(toSave.getCreatedAt());

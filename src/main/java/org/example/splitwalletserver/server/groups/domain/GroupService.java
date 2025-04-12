@@ -42,12 +42,35 @@ public class GroupService {
         if (toJoin.getMembers().size() == maxSizeOfGroup) {
             throw new IllegalArgumentException("This group is full");
         }
-        if (toJoin.getIsClosed()) {
+        if (Boolean.TRUE.equals(toJoin.getIsClosed())) {
             throw new IllegalArgumentException("This group is closed");
         }
         toJoin.getMembers().add(currentUser);
         groupRepository.save(toJoin);
 
+    }
+
+    public void closeGroup(Long groupId) {
+        var toClose = groupRepository.findById(groupId)
+                .orElseThrow(()-> new EntityNotFoundException("Group " + groupId + " not found"));
+
+        var currentUser = userService.getCurrentUser();
+        if (!currentUser.getId().equals(toClose.getUserOwner().getId())) {
+            throw new IllegalArgumentException("Only the owner can close the group");
+        }
+        toClose.setIsClosed(true);
+        groupRepository.save(toClose);
+    }
+
+    public void deleteGroup(Long groupId) {
+        var toJoin = groupRepository.findById(groupId)
+                .orElseThrow(()-> new EntityNotFoundException("Group " + groupId + " not found"));
+
+        var currentUser = userService.getCurrentUser();
+        if (!currentUser.getId().equals(toJoin.getUserOwner().getId())) {
+            throw new IllegalArgumentException("Only the owner can delete to group");
+        }
+        groupRepository.delete(toJoin);
     }
 
     public List<Group> getMyGroups() {

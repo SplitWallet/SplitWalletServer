@@ -24,7 +24,7 @@ import java.util.List;
 public class ExpenseUserService {
     private final ExpenseUserRepository expenseUserRepository;
     private final UserServiceImpl userService;
-    private final GroupRepository groupRepository; //TODO убрать!
+    private final GroupRepository groupRepository;
     private final ExpenseRepository expenseRepository;
 
     public List<ExpenseUser> getExpenseUsers(Long groupId, Long expenseId) {
@@ -104,6 +104,10 @@ public class ExpenseUserService {
     private Expense validateExpenseAccess(Long groupId, Long expenseId) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new EntityNotFoundException("Group not found"));
+
+        if (Boolean.TRUE.equals(group.getIsClosed())) {
+            throw new IllegalArgumentException("This group is closed");
+        }
 
         Expense expense = expenseRepository.findById(expenseId)
                 .orElseThrow(() -> new EntityNotFoundException("Expense not found"));
