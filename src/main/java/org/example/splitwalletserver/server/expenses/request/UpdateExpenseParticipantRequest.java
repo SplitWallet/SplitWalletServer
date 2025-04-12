@@ -19,5 +19,5 @@ public class UpdateExpenseParticipantRequest {
 
     @NotNull
     @PositiveOrZero
-    private BigDecimal paid; // Добавляем поле для явного указания оплаты
+    private BigDecimal paid;
 }

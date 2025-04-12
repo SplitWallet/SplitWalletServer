@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import org.example.splitwalletserver.server.expenses.db.Expense;
 import org.example.splitwalletserver.server.expenses.domain.ExpenseService;
 import org.example.splitwalletserver.server.expenses.request.CreateExpenseRequest;
+import org.example.splitwalletserver.server.expenses.request.UpdateExpenseRequest;
 import org.example.splitwalletserver.server.users.services.UserServiceImpl;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
@@ -58,6 +59,32 @@ public class ExpenseController {
         return ResponseEntity.status(201).body(expenseDto);
     }
 
+    @Operation(
+            summary = "Удалить расход",
+            description = "Позволяет аутентифицированному владельцу группы, удалить расход в ней"
+    )
+    @DeleteMapping("{expenseId}")
+    public ResponseEntity<String> deleteExpense(@PathVariable Long groupId,
+                                                @PathVariable Long expenseId) {
+        expenseService.deleteExpense(expenseId, groupId);
+        return ResponseEntity.status(201).body("Success!");
+    }
+
+    @Operation(
+            summary = "Обновить доли участников расхода",
+            description = "Обновляет суммы и выполоты, которые должны участники расхода" +
+                    "Доступно только для создателя расхода."
+    )
+    @PutMapping("{expenseId}")
+    public ResponseEntity<ExpenseDto> updateExpense(
+            @PathVariable Long groupId,
+            @PathVariable Long expenseId,
+            @RequestBody @Valid UpdateExpenseRequest requests) {
+        var updatedParticipants = expenseService.updateExpense(groupId, expenseId, requests);
+        return ResponseEntity.status(201).body(fromExpenseToDTO(updatedParticipants));
+    }
+
+
     private ExpenseDto fromExpenseToExpenseDto(Expense expense) {
         var expenseDto = modelMapper.map(expense, ExpenseDto.class);
         var amount = expense.getExpenseUsers().stream().filter(eu ->
@@ -66,5 +93,7 @@ public class ExpenseController {
         expenseDto.setCurrentUserPaid(amount);
         return expenseDto;
     }
+
+    private ExpenseDto fromExpenseToDTO(Expense expense) {return modelMapper.map(expense, ExpenseDto.class);}
 
 }
