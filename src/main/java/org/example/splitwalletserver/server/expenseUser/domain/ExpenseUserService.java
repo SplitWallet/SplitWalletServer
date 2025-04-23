@@ -67,7 +67,6 @@ public class ExpenseUserService {
 
     public ExpenseUser updatePaidAmount(Long groupId, Long expenseId, String userId, BigDecimal paid) {
         Expense expense = validateExpenseAccess(groupId, expenseId);
-        User currentUser = userService.getCurrentUser();
 
         // Проверяем что пользователь обновляет свою запись или это создатель расхода
         ExpenseUser expenseUser = expense.getExpenseUsers().stream()
@@ -75,10 +74,6 @@ public class ExpenseUserService {
                 .findFirst()
                 .orElseThrow(() -> new ForbiddenException("You are not a member of this group."));
 
-        if (!currentUser.getId().equals(expense.getUserWhoCreated().getId()) &&
-                !currentUser.getId().equals(userId)) {
-            throw new ForbiddenException("You can only update your own payment");
-        }
 
         expenseUser.setPaid(paid);
         expense.setUpdatedAt(LocalDateTime.now());

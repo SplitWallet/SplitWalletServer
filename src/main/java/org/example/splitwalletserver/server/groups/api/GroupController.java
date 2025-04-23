@@ -146,10 +146,19 @@ public class GroupController {
     @DeleteMapping("/{groupId}/members/{userId}")
     @Operation(summary = "Удалить пользователя группы",
             description = "Удалить пользователя группы по id. " +
-                    "Получить список пользователей может только  аутентифицированный пользователь член этой группы.")
+                    "Удалить пользователя группы только  аутентифицированный пользователь член этой группы.")
     public ResponseEntity<String> deleteGroupMembers(@PathVariable Long groupId,
                                                                            @PathVariable String userId) {
         groupService.deleteMembersOfGroup(groupId, userId);
+        return ResponseEntity.status(201).body("Success!!!");
+    }
+
+    @DeleteMapping("/{groupId}/leave")
+    @Operation(summary = "Удалить себя группы",
+            description = "Удалить себя группы по id. " +
+                    "Удалить пользователя группы может только  аутентифицированный пользователь член этой группы.")
+    public ResponseEntity<String> leaveGroup(@PathVariable Long groupId) {
+        groupService.leaveGroup(groupId);
         return ResponseEntity.status(201).body("Success!!!");
     }
 

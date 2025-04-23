@@ -32,12 +32,10 @@ public class GroupService {
 
     public void joinGroup(String uniqueCode) {
         var toJoin = groupRepository.findByUniqueCode(uniqueCode)
-                .orElseThrow(()-> new EntityNotFoundException("Group with code " + uniqueCode+ " not found"));
+                .orElseThrow(()-> new EntityNotFoundException(
+                        String.format("Group with code %s not found", uniqueCode)));
 
         var currentUser = userService.getCurrentUser();
-        if (currentUser.getId().equals(toJoin.getUserOwner().getId())) {
-            throw new IllegalArgumentException("Owner cannot join to group");
-        }
         var idListOfMembers = toJoin.getMembers().stream().map(User::getId).toList();
         if (idListOfMembers.contains(currentUser.getId())) {
             throw new IllegalArgumentException("You already joined to group");
@@ -55,25 +53,27 @@ public class GroupService {
 
     public void closeGroup(Long groupId) {
         var toClose = groupRepository.findById(groupId)
-                .orElseThrow(()-> new EntityNotFoundException("Group " + groupId + " not found"));
+                .orElseThrow(()-> new EntityNotFoundException(
+                        String.format("Group %s not found", groupId)));
 
         var currentUser = userService.getCurrentUser();
-        if (!currentUser.getId().equals(toClose.getUserOwner().getId())) {
-            throw new IllegalArgumentException("Only the owner can close the group");
+        if (!isUserMemberOfGroup(toClose, currentUser)) {
+            throw new IllegalArgumentException("Permission denied. You do not member of the group");
         }
         toClose.setIsClosed(true);
         groupRepository.save(toClose);
     }
 
     public void deleteGroup(Long groupId) {
-        var toJoin = groupRepository.findById(groupId)
-                .orElseThrow(()-> new EntityNotFoundException("Group " + groupId + " not found"));
+        var toDelete = groupRepository.findById(groupId)
+                .orElseThrow(()-> new EntityNotFoundException(
+                        String.format("Group %s not found", groupId)));
 
         var currentUser = userService.getCurrentUser();
-        if (!currentUser.getId().equals(toJoin.getUserOwner().getId())) {
-            throw new IllegalArgumentException("Only the owner can delete to group");
+        if (!isUserMemberOfGroup(toDelete, currentUser)) {
+            throw new IllegalArgumentException("Permission denied. You do not member of the group");
         }
-        groupRepository.delete(toJoin);
+        groupRepository.delete(toDelete);
     }
 
     public List<Group> getMyGroups() {
@@ -83,7 +83,9 @@ public class GroupService {
 
     public List<User> getMembersOfGroup(Long groupId) {
         var foundedGroup = groupRepository.findById(groupId)
-                .orElseThrow(()-> new EntityNotFoundException("Group with id " + groupId + " not found"));
+                .orElseThrow(()-> new EntityNotFoundException(
+                        String.format("Group with id %s not found", groupId))
+                );
         var currentUser = userService.getCurrentUser();
         if (!isUserMemberOfGroup(foundedGroup, currentUser)) {
             throw new IllegalArgumentException("Permission denied. You do not member of the group");
@@ -93,15 +95,14 @@ public class GroupService {
 
     public void deleteMembersOfGroup(Long groupId, String userId) {
         var foundedGroup = groupRepository.findById(groupId)
-                .orElseThrow(()-> new EntityNotFoundException("Group with id " + groupId + " not found"));
-        var currentUser = userService.getCurrentUser();
-        if (!isUserMemberOfGroup(foundedGroup, currentUser)) {
-            throw new IllegalArgumentException("Permission denied. You do not member of the group");
-        }
+                .orElseThrow(()-> new EntityNotFoundException(
+                        String.format("Group with id %s not found", groupId))
+                );
 
         var userToDelete = userRepository.findById(userId);
         if (userToDelete.isEmpty()){
-            throw new IllegalArgumentException("User " + userId + " not found");
+            throw new IllegalArgumentException(
+                    String.format("User %s not found", userId));
         }
         if (!isUserMemberOfGroup(foundedGroup, userToDelete.get())) {
             throw new IllegalArgumentException("Permission denied. This user do not member of the group");
@@ -112,9 +113,23 @@ public class GroupService {
             throw new IllegalArgumentException("Unable to remove group owner");
         }
 
-
         var toDelGroup = foundedGroup;
         toDelGroup.getMembers().remove(userToDelete.get());
+        groupRepository.save(toDelGroup);
+    }
+
+    public void leaveGroup(Long groupId) {
+        var foundedGroup = groupRepository.findById(groupId)
+                .orElseThrow(()-> new EntityNotFoundException(
+                        String.format("Group with id %s not found", groupId))
+                );
+        var currentUser = userService.getCurrentUser();
+        if (!isUserMemberOfGroup(foundedGroup, currentUser)) {
+            throw new IllegalArgumentException("Permission denied. You do not member of the group");
+        }
+
+        var toDelGroup = foundedGroup;
+        toDelGroup.getMembers().remove(currentUser);
         groupRepository.save(toDelGroup);
     }
 

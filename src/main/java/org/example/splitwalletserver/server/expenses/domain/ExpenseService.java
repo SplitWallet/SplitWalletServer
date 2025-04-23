@@ -108,8 +108,9 @@ public class ExpenseService {
                 .orElseThrow(()-> new EntityNotFoundException("Group or expence" + groupId +" " + expenseId + " not found"));
 
         var currentUser = userService.getCurrentUser();
-        if (!currentUser.getId().equals(toDelete.getGroup().getUserOwner().getId())) {
-            throw new IllegalArgumentException("Only the owner can delete to expense");
+        if (!toDelete.getGroup().getMembers().stream().map(User::getId)
+                .toList().contains(currentUser.getId())) {
+            throw new IllegalArgumentException("You don't member of group with id " + groupId);
         }
 
         expenseRepository.delete(toDelete);
