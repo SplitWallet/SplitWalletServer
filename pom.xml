@@ -9,8 +9,12 @@
         <!-- lookup parent from repository -->
     </parent>
     <modules>
-        <module>main-server</module>
-        <module>microservices/group-service</module>
+        <module>auth-service</module>
+        <module>eureka-server</module>
+        <module>expenses-service</module>
+        <module>expensesUser-service</module>
+        <module>gateway</module>
+        <module>groups-service</module>
     </modules>
     <packaging>pom</packaging>
     <groupId>org.example</groupId>
