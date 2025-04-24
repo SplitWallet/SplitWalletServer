@@ -17,6 +17,8 @@ public class GroupDTO {
 
     private String name;
 
+    private String uniqueCode;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;

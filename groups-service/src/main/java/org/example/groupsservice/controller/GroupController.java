@@ -120,13 +120,15 @@ public class GroupController {
         return ResponseEntity.status(201).body("Success!!!");
     }
 
-    //TODO Сейчас получать группу могут ВСЕ -> ИСПРАВИТЬ!!!
     @GetMapping("/{groupId}")
     @Operation(summary = "Получить группу по id",
             description = "Получить группу по id " +
                     "Получить группу может только  аутентифицированный пользователь член этой группы.")
-    public Group getGroupById(@PathVariable Long groupId) {
-        return groupService.getGroupsByGroupId(groupId);
+    public Group getGroupById(@PathVariable Long groupId, HttpServletRequest req) {
+        var authentication = (Authentication) req.getUserPrincipal();
+        var jwt = (Jwt) authentication.getPrincipal();
+        String currentUserId = jwt.getClaim("sub");
+        return groupService.getGroupByGroupId(groupId, currentUserId);
     }
 
     private GroupDTO fromGroupToDTO(Group group) {return modelMapper.map(group, GroupDTO.class);}

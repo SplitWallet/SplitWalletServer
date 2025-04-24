@@ -77,12 +77,13 @@ public class GroupService {
         return groupRepository.findAllByUserId(userId);
     }
 
-    public Group getGroupsByGroupId(Long groupId) {
-        var group = groupRepository.findById(groupId);
-        if (group.isPresent()) {
-            return group.get();
+    public Group getGroupByGroupId(Long groupId, String currentUserId) {
+        var group = groupRepository.findById(groupId)
+                .orElseThrow(()-> new EntityNotFoundException(String.format("Group %s not found",groupId)));
+        if (!isUserMemberOfGroup(group, currentUserId)) {
+            throw new IllegalArgumentException("Permission denied. You do not member of the group");
         }
-        throw new EntityNotFoundException("Group with id " + groupId + " not found");
+        return group;
 
     }
 
