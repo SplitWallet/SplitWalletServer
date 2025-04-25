@@ -3,6 +3,7 @@ package org.example.authservice.controller;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.AllArgsConstructor;
 import org.example.authservice.db.User;
+import org.example.authservice.dto.GoogleToken;
 import org.example.authservice.dto.LoginUserDTO;
 import org.example.authservice.dto.UserDTO;
 import org.example.authservice.service.UserServiceImpl;
@@ -49,6 +50,15 @@ public class UserController {
                 Collections.
                         singletonMap("jwtToken",userService.login
                                 (new LoginUserDTO(loginUserDTO.getLogin(),loginUserDTO.getPassword())).getToken()),
+                HttpStatus.CREATED
+        );
+    }
+
+    @PostMapping("/login/google")
+    public ResponseEntity<Object> loginUserByGoogle(@RequestBody GoogleToken googleToken) {
+        return new ResponseEntity<>(
+                Collections.
+                        singletonMap("jwtToken",userService.loginByGoogle(googleToken).getAccess_token()),
                 HttpStatus.CREATED
         );
     }

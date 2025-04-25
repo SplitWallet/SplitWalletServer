@@ -6,9 +6,11 @@ import jakarta.ws.rs.NotAuthorizedException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.core.Response;
+import org.example.authservice.client.AuthServiceClient;
 import org.example.authservice.config.KeycloakAdminClientProperties;
 import org.example.authservice.db.User;
 import org.example.authservice.db.UserRepository;
+import org.example.authservice.dto.GoogleToken;
 import org.example.authservice.dto.LoginUserDTO;
 import org.example.authservice.dto.UserDTO;
 import org.keycloak.admin.client.Keycloak;
@@ -19,7 +21,6 @@ import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -33,24 +34,24 @@ import java.util.logging.Logger;
 @Service
 public class UserServiceImpl implements UserService {
 
-    @Value("${keycloak.realm}")
-    private String realm;
-
     private final Keycloak keycloak;
 
     private final KeycloakAdminClientProperties keycloakAdminClientProperties;
 
     private final UserRepository userRepository;
 
+    private final AuthServiceClient authServiceClient;
+
     private final ModelMapper modelMapper;
 
     static Logger logger = Logger.getLogger(String.valueOf(UserServiceImpl.class));
 
     public UserServiceImpl(Keycloak keycloak, UserRepository userRepository,
-                           KeycloakAdminClientProperties keycloakAdminClientProperties, ModelMapper modelMapper) {
+                           KeycloakAdminClientProperties keycloakAdminClientProperties, AuthServiceClient authServiceClient, ModelMapper modelMapper) {
         this.keycloak = keycloak;
         this.userRepository = userRepository;
         this.keycloakAdminClientProperties = keycloakAdminClientProperties;
+        this.authServiceClient = authServiceClient;
         this.modelMapper = modelMapper;
     }
 
@@ -94,7 +95,7 @@ public class UserServiceImpl implements UserService {
         try (
                 Keycloak localKeycloak  = KeycloakBuilder.builder()
                         .serverUrl(keycloakAdminClientProperties.getUrl())
-                        .realm(realm)
+                        .realm(keycloakAdminClientProperties.getRealm())
                         .grantType("password")
                         .clientId(keycloakAdminClientProperties.getClientId())
                         .clientSecret(keycloakAdminClientProperties.getSecret())
@@ -115,8 +116,14 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public GoogleToken loginByGoogle(GoogleToken googleToken) {
+        return authServiceClient.loginByGoogle(keycloakAdminClientProperties, googleToken);
+    }
+
+
     private UsersResource getUsersResource() {
-        RealmResource realm1 = keycloak.realm(realm);
+        RealmResource realm1 = keycloak.realm(keycloakAdminClientProperties.getRealm());
         return realm1.users();
     }
 
