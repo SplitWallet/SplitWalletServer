@@ -27,7 +27,7 @@ public class ExpenseUserService {
         var expenseUsers = expenseUserRepository.findByExpenseId(expenseId);
 
         if (expenseUsers.isEmpty()) {
-            throw new EntityNotFoundException("Expense not found");
+            throw new EntityNotFoundException("ExpensesUser not found");
         }
 
         if (Boolean.TRUE.equals(expenseUsers.get(0).getExpense().getGroup().getIsClosed())) {

@@ -127,11 +127,9 @@ public class ExpenseService {
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        if(requests.getAmount().compareTo(totalAmount) <= 0){
-            throw new IllegalArgumentException(
-                    "The amount of the expense must not be less than the sum of the participants in the expense.");
+        if(requests.getAmount().compareTo(totalAmount) < 0){
+            expense.getExpenseUsers().clear();
         }
-
         expense.setAmount(requests.getAmount());
         expense.setDescription(requests.getDescription());
         expense.setDate(requests.getDate());
