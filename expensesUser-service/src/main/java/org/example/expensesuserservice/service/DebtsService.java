@@ -14,10 +14,7 @@ import org.example.expensesuserservice.other.User;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -25,9 +22,9 @@ public class DebtsService {
 
     private final ExpenseUserRepository expenseUserRepository;
 
-    private List<UserOwedInGroupData> getCurrentUserOwed(String userId) {
+    private List<UserOwedInGroupData> getCurrentUserOwed(String userId, Long groupId) {
 
-        var expenseUsers = expenseUserRepository.findByUserId(userId)
+        var expenseUsers = expenseUserRepository.findByUserIdAndGroupId(userId, groupId)
                 .orElseThrow(() -> new RuntimeException("Expense user not found"));
 
         // Группируем по группе → по кредитору → список деталей
@@ -97,9 +94,9 @@ public class DebtsService {
         return result;
     }
 
-    private List<UserOwedInGroupData> getWhoOwesYou(String currentUserId) {
+    private List<UserOwedInGroupData> getWhoOwesYou(String currentUserId, Long groupId) {
         // Получаем только те связи, где текущий пользователь — создатель расхода (кредитор)
-        var expenseUsers = expenseUserRepository.findDebtorsForUser(currentUserId)
+        var expenseUsers = expenseUserRepository.findDebtorsForUserAndGroup(currentUserId, groupId)
                 .orElseThrow(() -> new RuntimeException("Expense user not found"));
 
         // Группируем: по группам → по должникам
@@ -166,9 +163,12 @@ public class DebtsService {
         return result;
     }
 
-    public AggregatedDebtSummary getAggregatedDebts(String userId) {
-        List<UserOwedInGroupData> youOweData = getCurrentUserOwed(userId);
-        List<UserOwedInGroupData> owesYouData = getWhoOwesYou(userId);
+    public AggregatedDebtSummary getAggregatedDebts(String userId, Long groupId) {
+        List<UserOwedInGroupData> youOweData = getCurrentUserOwed(userId, groupId);
+        List<UserOwedInGroupData> owesYouData = getWhoOwesYou(userId, groupId);
+        String groupName = !youOweData.isEmpty()
+                ? youOweData.get(0).getGroupName()
+                : (!owesYouData.isEmpty() ? owesYouData.get(0).getGroupName() : null);
 
         Map<String, AggregatedDebtSummary.UserBalance> balanceMap = new HashMap<>();
 
@@ -211,6 +211,7 @@ public class DebtsService {
         }
 
         return AggregatedDebtSummary.builder()
+                .groupName(groupName)
                 .balances(new ArrayList<>(balanceMap.values()))
                 .build();
     }

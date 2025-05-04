@@ -13,6 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AggregatedDebtSummary {
+    private String groupName;
     private List<UserBalance> balances;
 
     @Data
