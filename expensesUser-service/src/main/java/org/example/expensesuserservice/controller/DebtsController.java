@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
+import org.example.expensesuserservice.dto.AggregatedDebtSummary;
 import org.example.expensesuserservice.dto.UserOwedInGroupData;
 import org.example.expensesuserservice.service.DebtsService;
 import org.springframework.http.ResponseEntity;
@@ -30,13 +31,13 @@ public class DebtsController {
             summary = "Получить подробную информацию о том, сколько денег и кому и в каких группах должен текущий пользователь",
             description = "Возвращает подробную информацию о том, сколько денег и кому и в каких группах должен текущий пользователь"
     )
-    @GetMapping("/me")
-    public ResponseEntity<List<UserOwedInGroupData>> getSumOfYouOwed(HttpServletRequest req) {
+    @GetMapping()
+    public ResponseEntity<AggregatedDebtSummary> getSumOfYouOwed(HttpServletRequest req) {
         var authentication = (Authentication) req.getUserPrincipal();
         var jwt = (Jwt) authentication.getPrincipal();
         String currentUserId = jwt.getClaim("sub");
 
-        var result = debtsService.getCurrentUserOwed(currentUserId);
+        var result = debtsService.getAggregatedDebts(currentUserId);
         return ResponseEntity.ok(result);
     }
 
