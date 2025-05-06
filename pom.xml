@@ -15,6 +15,7 @@
         <module>expensesUser-service</module>
         <module>gateway</module>
         <module>groups-service</module>
+        <module>notification-service</module>
     </modules>
     <packaging>pom</packaging>
     <groupId>org.example</groupId>
