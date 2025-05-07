@@ -41,6 +41,24 @@ public class MessageService {
         }
     }
 
+    public void delToken(String userId, String token) {
+        if (token.length() > 255){
+            throw new IllegalArgumentException("Не тот token");
+        }
+        var fcmTokenOptional = fcmTokenRepository.findByUserId(userId);
+
+        if (fcmTokenOptional.isEmpty()) {
+            return;
+        }
+        var fcmToken = fcmTokenOptional.get();
+
+
+        if (fcmToken.getTokens().remove(token)) {
+            fcmTokenRepository.save(fcmToken);
+        }
+    }
+
+
     public void sendNotificationToUser(String userId, NotificationRequest request) {
         var fcmTokenOptional = fcmTokenRepository.findByUserId(userId);
         FcmToken fcmTokens;

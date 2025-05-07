@@ -1,5 +1,6 @@
 package com.example.notificationservice.config;
 
+import org.springframework.http.HttpMethod;
 import lombok.RequiredArgsConstructor;
 import com.example.notificationservice.security.KeycloakJwtTokenConverter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +46,7 @@ public class SecurityConfig {
                         .requestMatchers("/users/*/notifications", "/swagger-ui/**",
                                 "/v3/api-docs/**")
                         .permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/users/*/tokens").permitAll()
                         .requestMatchers("/**").authenticated())
                 .sessionManagement(sessionConfigurer -> sessionConfigurer
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))

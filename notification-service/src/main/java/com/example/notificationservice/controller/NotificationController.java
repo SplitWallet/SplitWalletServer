@@ -24,6 +24,16 @@ public class NotificationController {
         return ResponseEntity.ok().build();
     }
 
+    @DeleteMapping("/{userId}/tokens")
+    public ResponseEntity<?> delToken(
+            @PathVariable String userId,
+            @RequestBody TokenRequest token
+    ) {
+        System.out.println(token.getToken());
+        messageService.delToken(userId, token.getToken());
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/{userId}/notifications")
     public void sendNotification(
             @PathVariable String userId,
@@ -31,4 +41,6 @@ public class NotificationController {
     ) {
         messageService.sendNotificationToUser(userId, notificationRequest);
     }
+
+
 }
