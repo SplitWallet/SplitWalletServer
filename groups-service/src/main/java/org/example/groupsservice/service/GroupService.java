@@ -54,15 +54,12 @@ public class GroupService {
             throw new IllegalArgumentException("This group is closed");
         }
 
-        var cur = new User(currentUserId);
-        members.add(cur);
-
         authServiceClient.sendNotificationToMultipleUsers(members,
                 new NotificationRequest("Добавления пользователя в группу",
                         String.format("Новый пользователь в группе %s", toJoin.getName())));
 
 
-        toJoin.getMembers().add(cur);
+        toJoin.getMembers().add(new User(currentUserId));
         groupRepository.save(toJoin);
 
     }
@@ -75,6 +72,12 @@ public class GroupService {
             throw new IllegalArgumentException("Only the owner can close the group");
         }
         toClose.setIsClosed(true);
+
+        var members = toClose.getMembers();
+
+        authServiceClient.sendNotificationToMultipleUsers(members,
+                new NotificationRequest("Закрытие группы",
+                        String.format("Группа %s была закрыта", toClose.getName())));
         groupRepository.save(toClose);
     }
 
@@ -86,9 +89,7 @@ public class GroupService {
             throw new IllegalArgumentException("Only the owner can delete to group");
         }
 
-        var cur = new User(currentUserId);
         var members = toJoin.getMembers();
-        members.add(cur);
 
         authServiceClient.sendNotificationToMultipleUsers(members,
                 new NotificationRequest("Удаление группы",

@@ -71,9 +71,7 @@ public class ExpenseService {
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + currentUserId + " not found"));
         expUs.setPaid(expUs.getAmount());
 
-        var cur = new User(currentUserId);
         var members = toSave.getGroup().getMembers();
-        members.add(cur);
 
         authServiceClient.sendNotificationToMultipleUsers(members,
                 new NotificationRequest("Добавление расхода",
@@ -114,13 +112,13 @@ public class ExpenseService {
         var toDelete = expenseRepository.findByIdAndGroupId(expenseId, groupId)
                 .orElseThrow(()-> new EntityNotFoundException("Group or expence" + groupId +" " + expenseId + " not found"));
 
-        if (!currentUserId.equals(toDelete.getGroup().getUserOwner().getId())) {
+        if (!currentUserId.equals(toDelete.getGroup().getUserOwner().getId()) ||
+                !currentUserId.equals(toDelete.getUserWhoCreated().getId())
+        ) {
             throw new IllegalArgumentException("Only the owner can delete to expense");
         }
 
-        var cur = new User(currentUserId);
         var members = toDelete.getGroup().getMembers();
-        members.add(cur);
 
         authServiceClient.sendNotificationToMultipleUsers(members,
                 new NotificationRequest("Удаление расхода",
@@ -157,9 +155,7 @@ public class ExpenseService {
         expense.setName(requests.getName());
         expense.setUpdatedAt(LocalDateTime.now());
 
-        var cur = new User(currentUserId);
         var members = expense.getGroup().getMembers();
-        members.add(cur);
 
         authServiceClient.sendNotificationToMultipleUsers(members,
                 new NotificationRequest("Обновление расхода",
