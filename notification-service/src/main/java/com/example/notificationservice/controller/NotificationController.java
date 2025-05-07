@@ -19,6 +19,7 @@ public class NotificationController {
             @PathVariable String userId,
             @RequestBody TokenRequest token
     ) {
+        System.out.println(token.getToken());
         messageService.saveToken(userId, token.getToken());
         return ResponseEntity.ok().build();
     }

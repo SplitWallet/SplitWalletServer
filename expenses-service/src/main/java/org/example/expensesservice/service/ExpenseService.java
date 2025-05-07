@@ -4,12 +4,14 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.ForbiddenException;
 import lombok.AllArgsConstructor;
+import org.example.expensesservice.client.AuthServiceClient;
 import org.example.expensesservice.db.Expense;
 import org.example.expensesservice.db.ExpenseRepository;
 import org.example.expensesservice.other.ExpenseUser;
 import org.example.expensesservice.other.Group;
 import org.example.expensesservice.other.User;
 import org.example.expensesservice.request.CreateExpenseRequest;
+import org.example.expensesservice.request.NotificationRequest;
 import org.example.expensesservice.request.UpdateExpenseRequest;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +27,8 @@ import java.util.Objects;
 public class ExpenseService {
 
     private final ExpenseRepository expenseRepository;
+
+    private final AuthServiceClient authServiceClient;
 
     public List<Expense> getExpenses(String currentUserId, Long groupId) {
         var expenses = expenseRepository.getExpensesByGroupId(groupId);
@@ -67,6 +71,14 @@ public class ExpenseService {
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + currentUserId + " not found"));
         expUs.setPaid(expUs.getAmount());
 
+        var cur = new User(currentUserId);
+        var members = toSave.getGroup().getMembers();
+        members.add(cur);
+
+        authServiceClient.sendNotificationToMultipleUsers(members,
+                new NotificationRequest("Добавление расхода",
+                        String.format("Новый расход был добавлен в группу %s", toSave.getGroup().getName())));
+
         return expenseRepository.save(toSave);
     }
 
@@ -106,6 +118,14 @@ public class ExpenseService {
             throw new IllegalArgumentException("Only the owner can delete to expense");
         }
 
+        var cur = new User(currentUserId);
+        var members = toDelete.getGroup().getMembers();
+        members.add(cur);
+
+        authServiceClient.sendNotificationToMultipleUsers(members,
+                new NotificationRequest("Удаление расхода",
+                        String.format("Расход %s был удален из группы %s", toDelete.getName(), toDelete.getGroup().getName())));
+
         expenseRepository.delete(toDelete);
     }
 
@@ -135,8 +155,16 @@ public class ExpenseService {
         expense.setDate(requests.getDate());
         expense.setCurrency(requests.getCurrency());
         expense.setName(requests.getName());
-
         expense.setUpdatedAt(LocalDateTime.now());
+
+        var cur = new User(currentUserId);
+        var members = expense.getGroup().getMembers();
+        members.add(cur);
+
+        authServiceClient.sendNotificationToMultipleUsers(members,
+                new NotificationRequest("Обновление расхода",
+                        String.format("Изменение расхода %s в группе %s", expense.getName(), expense.getGroup().getName())));
+
         return expenseRepository.save(expense);
     }
 }

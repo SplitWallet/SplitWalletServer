@@ -4,11 +4,13 @@ package org.example.expensesuserservice.service;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.ws.rs.ForbiddenException;
 import lombok.AllArgsConstructor;
+import org.example.expensesuserservice.client.AuthServiceClient;
 import org.example.expensesuserservice.db.ExpenseUser;
 import org.example.expensesuserservice.db.ExpenseUserRepository;
 import org.example.expensesuserservice.other.Expense;
 import org.example.expensesuserservice.other.Group;
 import org.example.expensesuserservice.other.User;
+import org.example.expensesuserservice.request.NotificationRequest;
 import org.example.expensesuserservice.request.UpdateExpenseParticipantRequest;
 import org.example.expensesuserservice.request.UpdatePaidAmountRequest;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,8 @@ import java.util.List;
 @AllArgsConstructor
 public class ExpenseUserService {
     private final ExpenseUserRepository expenseUserRepository;
+
+    private final AuthServiceClient authServiceClient;
 
     public List<ExpenseUser> getExpenseUsers(Long expenseId, String currentUserId) {
 
@@ -69,7 +73,12 @@ public class ExpenseUserService {
                 newEu.setPaid(req.getPaid());
                 updatedOrNew.add(newEu);
             }
+
+            authServiceClient.sendNotification(req.getUserId(),
+                    new NotificationRequest("Обновление долгов",
+                            String.format("Расход %s был обновлен в группе %s",expense.getName(), expense.getGroup().getName())));
         }
+
         return expenseUserRepository.saveAll(updatedOrNew);
     }
 
@@ -93,6 +102,12 @@ public class ExpenseUserService {
         expenseUser.setPaid(updatePaidAmountRequest.getPaid());
         expenseUser.getExpense().setUpdatedAt(LocalDateTime.now());
 
+        authServiceClient.sendNotification(userId,
+                new NotificationRequest("Обновление долгов",
+                        String.format("Ваш догл %s был пересмотрен в группе %s",
+                                expenseUser.getExpense().getName(),
+                                expenseUser.getExpense().getGroup().getName())));
+
         return expenseUserRepository.save(expenseUser);
     }
 
@@ -110,6 +125,12 @@ public class ExpenseUserService {
                 .filter(eu -> eu.getId().equals(currentUserId))
                 .findFirst()
                 .orElseThrow(() -> new ForbiddenException("You are not a member of this group."));
+
+        authServiceClient.sendNotification(userId,
+                new NotificationRequest("Удаление долгов",
+                        String.format("Ваш догл %s был удален в группе %s",
+                                expenseUser.getExpense().getName(),
+                                expenseUser.getExpense().getGroup().getName())));
 
         expenseUserRepository.delete(expenseUser);
     }

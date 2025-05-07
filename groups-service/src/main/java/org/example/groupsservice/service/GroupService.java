@@ -2,10 +2,12 @@ package org.example.groupsservice.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
+import org.example.groupsservice.client.AuthServiceClient;
 import org.example.groupsservice.db.Group;
 import org.example.groupsservice.db.GroupRepository;
 import org.example.groupsservice.other.User;
 import org.example.groupsservice.request.CreateGroupRequest;
+import org.example.groupsservice.request.NotificationRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,7 +18,10 @@ public class GroupService {
 
     private final GroupRepository groupRepository;
 
+    private final AuthServiceClient authServiceClient;
+
     private static final Integer maxCountOfCreatedGroup = 1000;
+
     private static final Integer maxSizeOfGroup = 50;
 
     public Group createGroup(CreateGroupRequest groupForm, String currentUserId) {
@@ -37,17 +42,27 @@ public class GroupService {
         if (currentUserId.equals(toJoin.getUserOwner().getId())) {
             throw new IllegalArgumentException("Owner cannot join to group");
         }
-        var idListOfMembers = toJoin.getMembers().stream().map(User::getId).toList();
+        var members = toJoin.getMembers();
+        var idListOfMembers = members.stream().map(User::getId).toList();
         if (idListOfMembers.contains(currentUserId)) {
             throw new IllegalArgumentException("You already joined to group");
         }
-        if (toJoin.getMembers().size() == maxSizeOfGroup) {
+        if (members.size() == maxSizeOfGroup) {
             throw new IllegalArgumentException("This group is full");
         }
         if (Boolean.TRUE.equals(toJoin.getIsClosed())) {
             throw new IllegalArgumentException("This group is closed");
         }
-        toJoin.getMembers().add(new User(currentUserId));
+
+        var cur = new User(currentUserId);
+        members.add(cur);
+
+        authServiceClient.sendNotificationToMultipleUsers(members,
+                new NotificationRequest("Добавления пользователя в группу",
+                        String.format("Новый пользователь в группе %s", toJoin.getName())));
+
+
+        toJoin.getMembers().add(cur);
         groupRepository.save(toJoin);
 
     }
@@ -70,6 +85,14 @@ public class GroupService {
         if (!currentUserId.equals(toJoin.getUserOwner().getId())) {
             throw new IllegalArgumentException("Only the owner can delete to group");
         }
+
+        var cur = new User(currentUserId);
+        var members = toJoin.getMembers();
+        members.add(cur);
+
+        authServiceClient.sendNotificationToMultipleUsers(members,
+                new NotificationRequest("Удаление группы",
+                        String.format("Группа %s была удалена", toJoin.getName())));
         groupRepository.delete(toJoin);
     }
 
@@ -112,6 +135,7 @@ public class GroupService {
                         new IllegalArgumentException(String.format("User %s not found in the group",userId)));
 
 
+
         if (userToDelete.equals(group.getUserOwner())) {
             throw new IllegalArgumentException("Unable to remove group owner");
         }
@@ -119,6 +143,11 @@ public class GroupService {
 
         var toDelGroup = group;
         toDelGroup.getMembers().remove(userToDelete);
+
+        authServiceClient.sendNotification(userId,
+                new NotificationRequest("Удаление участника",
+                        String.format("Вы были удалены их группы %s", toDelGroup.getName())));
+
         groupRepository.save(toDelGroup);
     }
 

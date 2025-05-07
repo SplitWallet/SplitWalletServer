@@ -23,18 +23,10 @@ public class MessageService {
         this.firebaseMessaging = firebaseMessaging;
     }
 
-    public String sendToToken(String token, String title, String body) throws Exception {
-        Message message = Message.builder()
-                .setToken(token)
-                .setNotification(Notification.builder()
-                        .setTitle(title)
-                        .setBody(body)
-                        .build())
-                .build();
-        return FirebaseMessaging.getInstance().send(message);
-    }
-
     public void saveToken(String userId, String token) {
+        if (token.length() > 255){
+            throw new IllegalArgumentException("Не тот token");
+        }
         var fcmTokenOptional = fcmTokenRepository.findByUserId(userId);
         FcmToken fcmToken;
         if (fcmTokenOptional.isEmpty()) {
@@ -44,7 +36,6 @@ public class MessageService {
         else {
             fcmToken = fcmTokenOptional.get();
         }
-
         if (fcmToken.getTokens().add(token)) {
             fcmTokenRepository.save(fcmToken);
         }

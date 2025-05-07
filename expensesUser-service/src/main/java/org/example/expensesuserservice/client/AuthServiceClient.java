@@ -6,14 +6,20 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.persistence.EntityNotFoundException;
 import org.example.expensesuserservice.other.Group;
 import org.example.expensesuserservice.other.User;
+import org.example.expensesuserservice.request.NotificationRequest;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class AuthServiceClient {
@@ -84,5 +90,53 @@ public class AuthServiceClient {
         } catch (IOException e) {
             throw new EntityNotFoundException("Ошибка сети: " + e.getMessage());
         }
+    }
+
+    public HttpResponse<String> sendNotification(String userId, NotificationRequest notificationRequest) {
+        try {
+            String url = "http://localhost:8080/notification-service/users/" + URLEncoder.encode(userId, StandardCharsets.UTF_8) + "/notifications";
+
+            String requestBody = objectMapper.writeValueAsString(notificationRequest);
+
+            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .timeout(Duration.ofSeconds(10))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(requestBody));
+
+            HttpRequest request = requestBuilder.build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                return response;
+
+            } else if (response.statusCode() == 404){
+                System.out.println(response.body());
+                return response;
+            } else{
+                throw new EntityNotFoundException("Ошибка при вызове Notification Service: " + response.statusCode() +
+                        " Body: " + response.body());
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new EntityNotFoundException("Вызов Notification Service прерван");
+        } catch (IOException e) {
+            throw new EntityNotFoundException("Ошибка сети при вызове Notification Service: " + e.getMessage());
+        }
+    }
+
+    public Map<String, HttpResponse<String>> sendNotificationToMultipleUsers(
+            List<User> users,
+            NotificationRequest notificationRequest) {
+
+        Map<String, HttpResponse<String>> responses = new HashMap<>();
+
+        for (User user : users) {
+            HttpResponse<String> response = sendNotification(user.getId(), notificationRequest);
+            responses.put(user.getId(), response);
+        }
+
+        return responses;
     }
 }
