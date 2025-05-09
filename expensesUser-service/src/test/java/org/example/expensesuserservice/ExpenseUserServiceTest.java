@@ -136,7 +136,7 @@ class ExpenseUserServiceTest {
         when(expenseUserRepository.findByExpenseId(expenseId)).thenReturn(List.of(existingUser));
         when(expenseUserRepository.saveAll(anyList())).thenReturn(List.of(existingUser));
 
-        List<ExpenseUser> updatedUsers = expenseUserService.updateExpense(expenseId, List.of(request), currentUserId, group);
+        List<ExpenseUser> updatedUsers = expenseUserService.updateExpenseUser(expenseId, List.of(request), currentUserId, group);
 
         assertThat(updatedUsers).hasSize(1);
         assertThat(updatedUsers.get(0).getAmount()).isEqualTo(new BigDecimal("100.00"));
@@ -166,7 +166,7 @@ class ExpenseUserServiceTest {
         when(expenseUserRepository.findByExpenseId(expenseId)).thenReturn(new ArrayList<>());
         when(expenseUserRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        List<ExpenseUser> updatedUsers = expenseUserService.updateExpense(expenseId, List.of(request), currentUserId, group);
+        List<ExpenseUser> updatedUsers = expenseUserService.updateExpenseUser(expenseId, List.of(request), currentUserId, group);
 
         assertThat(updatedUsers).hasSize(1);
         assertThat(updatedUsers.get(0).getUser().getId()).isEqualTo("user2");

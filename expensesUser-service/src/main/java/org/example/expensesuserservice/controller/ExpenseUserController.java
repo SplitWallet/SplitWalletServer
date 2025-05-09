@@ -73,7 +73,7 @@ public class ExpenseUserController {
         String currentUserId = jwt.getClaim("sub");
 
         var group = authServiceClient.getGroupById(authHeader, groupId);
-        List<ExpenseUser> updatedParticipants = expenseUserService.updateExpense( expenseId, requests,currentUserId, group);
+        List<ExpenseUser> updatedParticipants = expenseUserService.updateExpenseUser( expenseId, requests,currentUserId, group);
         return ResponseEntity.status(201).body(updatedParticipants.stream()
                 .map(eu -> modelMapper.map(eu, ExpenseUserDto.class))
                 .toList());

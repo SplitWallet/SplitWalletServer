@@ -96,7 +96,7 @@ class ExpenseUserControllerTest {
         dto.setAmount(BigDecimal.valueOf(200.0));
 
         when(authServiceClient.getGroupById(anyString(), eq(1L))).thenReturn(new Group());
-        when(expenseUserService.updateExpense(eq(1L), anyList(), eq(userId), any())).thenReturn(List.of(expenseUser));
+        when(expenseUserService.updateExpenseUser(eq(1L), anyList(), eq(userId), any())).thenReturn(List.of(expenseUser));
         when(modelMapper.map(expenseUser, ExpenseUserDto.class)).thenReturn(dto);
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -110,7 +110,7 @@ class ExpenseUserControllerTest {
                 .andExpect(jsonPath("$[0].userId").value("user789"))
                 .andExpect(jsonPath("$[0].amount").value(200.0));
 
-        verify(expenseUserService).updateExpense(eq(1L), anyList(), eq(userId), any());
+        verify(expenseUserService).updateExpenseUser(eq(1L), anyList(), eq(userId), any());
         verifyNoMoreInteractions(expenseUserService);
     }
 

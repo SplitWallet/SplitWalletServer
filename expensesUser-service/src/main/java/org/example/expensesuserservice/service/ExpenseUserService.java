@@ -47,39 +47,33 @@ public class ExpenseUserService {
 
     }
 
-    public List<ExpenseUser> updateExpense(Long expenseId, List<UpdateExpenseParticipantRequest> requests,
-                                           String currentUserId, Group group) {
+    public List<ExpenseUser> updateExpenseUser(Long expenseId, List<UpdateExpenseParticipantRequest> requests,
+                                               String currentUserId, Group group) {
 
         var expense = validateExpenseAccess(expenseId, currentUserId, group);
 
+        // Удаляем всех текущих участников расхода
         List<ExpenseUser> existingExpenseUsers = expenseUserRepository.findByExpenseId(expenseId);
+        if (!existingExpenseUsers.isEmpty()) {
+            expenseUserRepository.deleteAll(existingExpenseUsers);
+        }
 
-        List<ExpenseUser> updatedOrNew = new ArrayList<>();
+        // Создаем новых участников по requests
+        List<ExpenseUser> newExpenseUsers = new ArrayList<>();
         for (UpdateExpenseParticipantRequest req : requests) {
-            ExpenseUser existing = existingExpenseUsers.stream()
-                    .filter(eu -> eu.getUser().getId().equals(req.getUserId()))
-                    .findFirst()
-                    .orElse(null);
-
-            if (existing != null) {
-                existing.setAmount(req.getAmount());
-                existing.setPaid(req.getPaid());
-                updatedOrNew.add(existing);
-            } else {
-                ExpenseUser newEu = new ExpenseUser();
-                newEu.setUser(new User(req.getUserId()));
-                newEu.setExpense(expense);
-                newEu.setAmount(req.getAmount());
-                newEu.setPaid(req.getPaid());
-                updatedOrNew.add(newEu);
-            }
+            ExpenseUser newEu = new ExpenseUser();
+            newEu.setUser(new User(req.getUserId()));
+            newEu.setExpense(expense);
+            newEu.setAmount(req.getAmount());
+            newEu.setPaid(req.getPaid());
+            newExpenseUsers.add(newEu);
 
             authServiceClient.sendNotification(req.getUserId(),
                     new NotificationRequest("Обновление долгов",
-                            String.format("Расход %s был обновлен в группе %s",expense.getName(), expense.getGroup().getName())));
+                            String.format("Расход %s был обновлен в группе %s", expense.getName(), group.getName())));
         }
 
-        return expenseUserRepository.saveAll(updatedOrNew);
+        return expenseUserRepository.saveAll(newExpenseUsers);
     }
 
     public ExpenseUser updatePaidAmount(Long expenseId, String userId, UpdatePaidAmountRequest updatePaidAmountRequest,
