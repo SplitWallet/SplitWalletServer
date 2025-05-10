@@ -16,5 +16,4 @@ public class SplitWalletServerApplication {
     ModelMapper modelMapper() {
         return new ModelMapper();
     }
-
 }

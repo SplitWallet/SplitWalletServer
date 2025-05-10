@@ -3,16 +3,14 @@ package org.example.splitwalletserver.server.groups.db;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.example.splitwalletserver.server.models.Expense;
-import org.example.splitwalletserver.server.models.User;
+import org.example.splitwalletserver.server.expenses.db.Expense;
+import org.example.splitwalletserver.server.users.model.User;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -31,17 +29,20 @@ public class Group {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt = LocalDateTime.now();;
+    private LocalDateTime updatedAt = LocalDateTime.now();
 
     @ManyToOne
     @JoinColumn(name = "user_owner_id", nullable = false)
     private User userOwner;
 
+    @Column(name = "unique_code", nullable = false, unique = true)  //todo предусмотреть уникальность повторной проверкой
+    private String uniqueCode = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+
     @ManyToMany
     @JoinTable(
             name = "group_members",
             joinColumns = @JoinColumn(name = "group_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
+            inverseJoinColumns = @JoinColumn(name = "user_entity_id")
     )
     private List<User> members = new ArrayList<>();
 

@@ -23,7 +23,7 @@ public class SwaggerConfig {
                         )
                 )
                 .info(
-                        new Info().title("SplitWalletServer")
+                        new Info().title("Split Wallet Keyclock")
                                 .description("No.")
                 ).components(new Components()
                 .addSecuritySchemes("bearerAuth",

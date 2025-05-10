@@ -11,13 +11,14 @@ import lombok.AllArgsConstructor;
 import org.example.splitwalletserver.server.groups.db.Group;
 import org.example.splitwalletserver.server.groups.domain.GroupService;
 import org.example.splitwalletserver.server.groups.request.CreateGroupRequest;
+import org.example.splitwalletserver.server.users.dto.UserInsensitiveInfoDTO;
+import org.example.splitwalletserver.server.users.model.User;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @AllArgsConstructor
@@ -101,5 +102,66 @@ public class GroupController {
         return ResponseEntity.status(201).body(fromGroupToDTO(created));
     }
 
+    @PostMapping("{uniqueCode}/join")
+    @Operation(summary = "Присоединиться к группе по коду",
+            description = "Позволяет текущему аутентифицированному пользователю присоединиться к группе, используя уникальный код группы.")
+    public ResponseEntity<String> joinGroup(@PathVariable String uniqueCode) {
+        groupService.joinGroup(uniqueCode);
+        return ResponseEntity.status(201).body("Success!");
+    }
+
+    @PatchMapping("{groupId}/close")
+    @Operation(summary = "Закрыть группу",
+            description = "Позволяет аутентифицированному владельцу группы, закрыть ее")
+    public ResponseEntity<String> closeGroup(@PathVariable Long groupId) {
+        groupService.closeGroup(groupId);
+        return ResponseEntity.status(201).body("Success!");
+    }
+
+    @DeleteMapping("{groupId}")
+    @Operation(summary = "Удалить группу",
+            description = "Позволяет аутентифицированному владельцу группы, удалить ее.")
+    public ResponseEntity<String> deleteGroup(@PathVariable Long groupId) {
+        groupService.deleteGroup(groupId);
+        return ResponseEntity.status(201).body("Success!");
+    }
+
+    @GetMapping("/my")
+    @Operation(summary = "Получить группы по пользователю",
+            description = "Получить группы, в которых состоит текущий пользователь. Получить свои группы может только  аутентифицированный пользователь.")
+    public ResponseEntity<List<GroupDTO>> getMyGrouos() {
+        var toReturn = groupService.getMyGroups().stream().map(this::fromGroupToDTO).toList();
+        return ResponseEntity.status(201).body(toReturn);
+    }
+
+    @GetMapping("/{groupId}/members")
+    @Operation(summary = "Получить всех пользователей группы",
+            description = "Возвращает список всех пользователей в выбранный группе. " +
+                    "Получить список пользователей может только  аутентифицированный пользователь член этой группы.")
+    public ResponseEntity<List<UserInsensitiveInfoDTO>> getGroupMembers(@PathVariable Long groupId) {
+        var members = groupService.getMembersOfGroup(groupId).stream().map(this::fromUserToDTO).toList();
+        return ResponseEntity.status(201).body(members);
+    }
+
+    @DeleteMapping("/{groupId}/members/{userId}")
+    @Operation(summary = "Удалить пользователя группы",
+            description = "Удалить пользователя группы по id. " +
+                    "Удалить пользователя группы только  аутентифицированный пользователь член этой группы.")
+    public ResponseEntity<String> deleteGroupMembers(@PathVariable Long groupId,
+                                                                           @PathVariable String userId) {
+        groupService.deleteMembersOfGroup(groupId, userId);
+        return ResponseEntity.status(201).body("Success!!!");
+    }
+
+    @DeleteMapping("/{groupId}/leave")
+    @Operation(summary = "Удалить себя группы",
+            description = "Удалить себя группы по id. " +
+                    "Удалить пользователя группы может только  аутентифицированный пользователь член этой группы.")
+    public ResponseEntity<String> leaveGroup(@PathVariable Long groupId) {
+        groupService.leaveGroup(groupId);
+        return ResponseEntity.status(201).body("Success!!!");
+    }
+
     private GroupDTO fromGroupToDTO(Group group) {return modelMapper.map(group, GroupDTO.class);}
+    private UserInsensitiveInfoDTO fromUserToDTO(User user) {return modelMapper.map(user, UserInsensitiveInfoDTO.class);}
 }
