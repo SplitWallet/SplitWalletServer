@@ -112,7 +112,7 @@ public class AuthServiceClient {
                 return response;
 
             } else if (response.statusCode() == 404){
-                System.out.println(response.body());
+                System.err.println(response.body());
                 return response;
             } else{
                 throw new EntityNotFoundException("Ошибка при вызове Notification Service: " + response.statusCode() +

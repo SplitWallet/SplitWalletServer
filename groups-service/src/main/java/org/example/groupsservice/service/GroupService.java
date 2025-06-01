@@ -20,8 +20,6 @@ public class GroupService {
 
     private final AuthServiceClient authServiceClient;
 
-    private static final Integer maxCountOfCreatedGroup = 1000;
-
     private static final Integer maxSizeOfGroup = 50;
 
     public Group createGroup(CreateGroupRequest groupForm, String currentUserId) {
@@ -123,7 +121,7 @@ public class GroupService {
     public void deleteMembersOfGroup(Long groupId, String userId, String currentUserId) {
         var group  = groupRepository.findById(groupId)
                 .orElseThrow(()->
-                        new EntityNotFoundException(String.format("Group %s not found",groupId)));
+                        new EntityNotFoundException(String.format("Group %s not found", groupId)));
 
         if (!isUserMemberOfGroup(group, currentUserId)) {
             throw new IllegalArgumentException("Permission denied. You do not member of the group");
@@ -133,7 +131,7 @@ public class GroupService {
                 .filter(user -> user.getId().equals(userId))
                 .findFirst()
                 .orElseThrow(() ->
-                        new IllegalArgumentException(String.format("User %s not found in the group",userId)));
+                        new IllegalArgumentException(String.format("User %s not found in the group", userId)));
 
 
 
@@ -141,15 +139,13 @@ public class GroupService {
             throw new IllegalArgumentException("Unable to remove group owner");
         }
 
-
-        var toDelGroup = group;
-        toDelGroup.getMembers().remove(userToDelete);
+        group.getMembers().remove(userToDelete);
 
         authServiceClient.sendNotification(userId,
                 new NotificationRequest("Удаление участника",
-                        String.format("Вы были удалены их группы %s", toDelGroup.getName())));
+                        String.format("Вы были удалены их группы %s", group.getName())));
 
-        groupRepository.save(toDelGroup);
+        groupRepository.save(group);
     }
 
     private boolean isUserMemberOfGroup(Group group, String currentUserId) {
