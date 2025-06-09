@@ -4,9 +4,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import jakarta.ws.rs.core.HttpHeaders;
 import lombok.AllArgsConstructor;
-import org.example.expensesuserservice.client.AuthServiceClient;
+import org.example.expensesuserservice.client.MultiServiceClient;
 import org.example.expensesuserservice.db.ExpenseUser;
 import org.example.expensesuserservice.dto.ExpenseUserDto;
 import org.example.expensesuserservice.request.UpdateExpenseParticipantRequest;
@@ -30,7 +29,7 @@ import java.util.List;
 public class ExpenseUserController {
 
     private final ExpenseUserService expenseUserService;
-    private final AuthServiceClient authServiceClient;
+    private final MultiServiceClient multiServiceClient;
     private final ModelMapper modelMapper;
 
     @Operation(
@@ -65,14 +64,13 @@ public class ExpenseUserController {
             (
             @PathVariable Long groupId, @PathVariable Long expenseId,
             @RequestBody @Valid List<UpdateExpenseParticipantRequest> requests,
-            @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
             HttpServletRequest req
             ) {
         var authentication = (Authentication) req.getUserPrincipal();
         var jwt = (Jwt) authentication.getPrincipal();
         String currentUserId = jwt.getClaim("sub");
 
-        var group = authServiceClient.getGroupById(authHeader, groupId);
+        var group = multiServiceClient.getGroupById(groupId);
         List<ExpenseUser> updatedParticipants = expenseUserService.updateExpenseUser( expenseId, requests,currentUserId, group);
         return ResponseEntity.status(201).body(updatedParticipants.stream()
                 .map(eu -> modelMapper.map(eu, ExpenseUserDto.class))

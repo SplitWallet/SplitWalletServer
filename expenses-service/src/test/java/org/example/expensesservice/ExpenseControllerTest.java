@@ -1,7 +1,7 @@
 package org.example.expensesservice;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.example.expensesservice.client.AuthServiceClient;
+import org.example.expensesservice.client.MultiServiceClient;
 import org.example.expensesservice.controller.ExpenseController;
 import org.example.expensesservice.db.Expense;
 import org.example.expensesservice.dto.ExpenseDto;
@@ -42,7 +42,7 @@ class ExpenseControllerTest {
     private ExpenseService expenseService;
 
     @Mock
-    private AuthServiceClient authServiceClient;
+    private MultiServiceClient multiServiceClient;
 
     @Mock
     private ModelMapper modelMapper;
@@ -123,7 +123,7 @@ class ExpenseControllerTest {
         Group group = new Group();
         group.setId(groupId);
 
-        when(authServiceClient.getGroupById(anyString(), eq(groupId))).thenReturn(group);
+        when(multiServiceClient.getGroupById(eq(groupId))).thenReturn(group);
         when(expenseService.createExpense(any(CreateExpenseRequest.class), eq(userId), eq(group))).thenReturn(createdExpense);
         when(modelMapper.map(eq(createdExpense), eq(ExpenseDto.class))).thenReturn(expenseDto);
 

@@ -4,7 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.ForbiddenException;
 import lombok.AllArgsConstructor;
-import org.example.expensesservice.client.AuthServiceClient;
+import org.example.expensesservice.client.MultiServiceClient;
 import org.example.expensesservice.db.Expense;
 import org.example.expensesservice.db.ExpenseRepository;
 import org.example.expensesservice.other.ExpenseUser;
@@ -28,7 +28,7 @@ public class ExpenseService {
 
     private final ExpenseRepository expenseRepository;
 
-    private final AuthServiceClient authServiceClient;
+    private final MultiServiceClient multiServiceClient;
 
     public List<Expense> getExpenses(String currentUserId, Long groupId) {
         var expenses = expenseRepository.getExpensesByGroupId(groupId);
@@ -73,7 +73,7 @@ public class ExpenseService {
 
         var members = toSave.getGroup().getMembers();
 
-        authServiceClient.sendNotificationToMultipleUsers(members,
+        multiServiceClient.sendNotificationToMultipleUsers(members,
                 new NotificationRequest("Добавление расхода",
                         String.format("Новый расход был добавлен в группу %s", toSave.getGroup().getName())));
 
@@ -120,7 +120,7 @@ public class ExpenseService {
 
         var members = toDelete.getGroup().getMembers();
 
-        authServiceClient.sendNotificationToMultipleUsers(members,
+        multiServiceClient.sendNotificationToMultipleUsers(members,
                 new NotificationRequest("Удаление расхода",
                         String.format("Расход %s был удален из группы %s", toDelete.getName(), toDelete.getGroup().getName())));
 
@@ -157,7 +157,7 @@ public class ExpenseService {
 
         var members = expense.getGroup().getMembers();
 
-        authServiceClient.sendNotificationToMultipleUsers(members,
+        multiServiceClient.sendNotificationToMultipleUsers(members,
                 new NotificationRequest("Обновление расхода",
                         String.format("Изменение расхода %s в группе %s", expense.getName(), expense.getGroup().getName())));
 

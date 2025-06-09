@@ -2,7 +2,7 @@ package org.example.groupsservice.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
-import org.example.groupsservice.client.AuthServiceClient;
+import org.example.groupsservice.client.MultiServiceClient;
 import org.example.groupsservice.db.Group;
 import org.example.groupsservice.db.GroupRepository;
 import org.example.groupsservice.other.User;
@@ -18,7 +18,7 @@ public class GroupService {
 
     private final GroupRepository groupRepository;
 
-    private final AuthServiceClient authServiceClient;
+    private final MultiServiceClient multiServiceClient;
 
     private static final Integer maxSizeOfGroup = 50;
 
@@ -52,7 +52,7 @@ public class GroupService {
             throw new IllegalArgumentException("This group is closed");
         }
 
-        authServiceClient.sendNotificationToMultipleUsers(members,
+        multiServiceClient.sendNotificationToMultipleUsers(members,
                 new NotificationRequest("Добавления пользователя в группу",
                         String.format("Новый пользователь в группе %s", toJoin.getName())));
 
@@ -73,7 +73,7 @@ public class GroupService {
 
         var members = toClose.getMembers();
 
-        authServiceClient.sendNotificationToMultipleUsers(members,
+        multiServiceClient.sendNotificationToMultipleUsers(members,
                 new NotificationRequest("Закрытие группы",
                         String.format("Группа %s была закрыта", toClose.getName())));
         groupRepository.save(toClose);
@@ -89,7 +89,7 @@ public class GroupService {
 
         var members = toJoin.getMembers();
 
-        authServiceClient.sendNotificationToMultipleUsers(members,
+        multiServiceClient.sendNotificationToMultipleUsers(members,
                 new NotificationRequest("Удаление группы",
                         String.format("Группа %s была удалена", toJoin.getName())));
         groupRepository.delete(toJoin);
@@ -141,7 +141,7 @@ public class GroupService {
 
         group.getMembers().remove(userToDelete);
 
-        authServiceClient.sendNotification(userId,
+        multiServiceClient.sendNotification(userId,
                 new NotificationRequest("Удаление участника",
                         String.format("Вы были удалены их группы %s", group.getName())));
 

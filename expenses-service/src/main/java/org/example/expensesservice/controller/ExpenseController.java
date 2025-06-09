@@ -4,9 +4,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import jakarta.ws.rs.core.HttpHeaders;
 import lombok.AllArgsConstructor;
-import org.example.expensesservice.client.AuthServiceClient;
+import org.example.expensesservice.client.MultiServiceClient;
 import org.example.expensesservice.db.Expense;
 import org.example.expensesservice.dto.ExpenseDto;
 import org.example.expensesservice.other.ExpenseUser;
@@ -34,7 +33,7 @@ public class ExpenseController {
 
     private final ExpenseService expenseService;
 
-    private final AuthServiceClient authServiceClient;
+    private final MultiServiceClient multiServiceClient;
 
     @Operation(
             summary = "Получить все расходы группы",
@@ -71,14 +70,14 @@ public class ExpenseController {
             (
                     @PathVariable Long groupId,
                     @RequestBody @Valid CreateExpenseRequest createExpenseRequest,
-                    @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
+                    /*@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,*/
                     HttpServletRequest req
             ) {
         var authentication = (Authentication) req.getUserPrincipal();
         var jwt = (Jwt) authentication.getPrincipal();
         String currentUserId = jwt.getClaim("sub");
 
-        var group = authServiceClient.getGroupById(authHeader, groupId);
+        var group = multiServiceClient.getGroupById(groupId);
         var returned = expenseService.createExpense(createExpenseRequest, currentUserId, group);
         var expenseDto = fromExpenseToExpenseDto(returned, currentUserId);
         return ResponseEntity.status(201).body(expenseDto);

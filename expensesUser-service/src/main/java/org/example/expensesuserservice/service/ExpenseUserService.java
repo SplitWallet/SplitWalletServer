@@ -4,7 +4,7 @@ package org.example.expensesuserservice.service;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.ws.rs.ForbiddenException;
 import lombok.AllArgsConstructor;
-import org.example.expensesuserservice.client.AuthServiceClient;
+import org.example.expensesuserservice.client.MultiServiceClient;
 import org.example.expensesuserservice.db.ExpenseUser;
 import org.example.expensesuserservice.db.ExpenseUserRepository;
 import org.example.expensesuserservice.other.Expense;
@@ -24,7 +24,7 @@ import java.util.List;
 public class ExpenseUserService {
     private final ExpenseUserRepository expenseUserRepository;
 
-    private final AuthServiceClient authServiceClient;
+    private final MultiServiceClient multiServiceClient;
 
     public List<ExpenseUser> getExpenseUsers(Long expenseId, String currentUserId) {
 
@@ -68,7 +68,7 @@ public class ExpenseUserService {
             newEu.setPaid(req.getPaid());
             newExpenseUsers.add(newEu);
 
-            authServiceClient.sendNotification(req.getUserId(),
+            multiServiceClient.sendNotification(req.getUserId(),
                     new NotificationRequest("Обновление долгов",
                             String.format("Расход %s был обновлен в группе %s", expense.getName(), group.getName())));
         }
@@ -96,7 +96,7 @@ public class ExpenseUserService {
         expenseUser.setPaid(updatePaidAmountRequest.getPaid());
         expenseUser.getExpense().setUpdatedAt(LocalDateTime.now());
 
-        authServiceClient.sendNotification(userId,
+        multiServiceClient.sendNotification(userId,
                 new NotificationRequest("Обновление долгов",
                         String.format("Ваш догл %s был пересмотрен в группе %s",
                                 expenseUser.getExpense().getName(),
@@ -120,7 +120,7 @@ public class ExpenseUserService {
                 .findFirst()
                 .orElseThrow(() -> new ForbiddenException("You are not a member of this group."));
 
-        authServiceClient.sendNotification(userId,
+        multiServiceClient.sendNotification(userId,
                 new NotificationRequest("Удаление долгов",
                         String.format("Ваш догл %s был удален в группе %s",
                                 expenseUser.getExpense().getName(),

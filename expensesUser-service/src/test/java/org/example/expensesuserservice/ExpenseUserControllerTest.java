@@ -8,7 +8,7 @@ import org.example.expensesuserservice.other.Group;
 import org.example.expensesuserservice.request.UpdateExpenseParticipantRequest;
 import org.example.expensesuserservice.request.UpdatePaidAmountRequest;
 import org.example.expensesuserservice.service.ExpenseUserService;
-import org.example.expensesuserservice.client.AuthServiceClient;
+import org.example.expensesuserservice.client.MultiServiceClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,7 +40,7 @@ class ExpenseUserControllerTest {
     private ExpenseUserService expenseUserService;
 
     @Mock
-    private AuthServiceClient authServiceClient;
+    private MultiServiceClient multiServiceClient;
 
     @Mock
     private ModelMapper modelMapper;
@@ -95,7 +95,7 @@ class ExpenseUserControllerTest {
         dto.setUserId("user789");
         dto.setAmount(BigDecimal.valueOf(200.0));
 
-        when(authServiceClient.getGroupById(anyString(), eq(1L))).thenReturn(new Group());
+        when(multiServiceClient.getGroupById(eq(1L))).thenReturn(new Group());
         when(expenseUserService.updateExpenseUser(eq(1L), anyList(), eq(userId), any())).thenReturn(List.of(expenseUser));
         when(modelMapper.map(expenseUser, ExpenseUserDto.class)).thenReturn(dto);
 
