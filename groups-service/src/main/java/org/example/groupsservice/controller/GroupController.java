@@ -31,9 +31,7 @@ public class GroupController {
             description = "Создает новую группу с указанными параметрами. Группа может быть создана только аутентифицированным пользователем.")
     public ResponseEntity<GroupDTO> createGroup(@RequestBody @Valid CreateGroupRequest createGroupRequest,
                                                 HttpServletRequest req) {
-        var authentication = (Authentication) req.getUserPrincipal();
-        var jwt = (Jwt) authentication.getPrincipal();
-        String currentUserId = jwt.getClaim("sub");
+        var currentUserId = getCurrentUserId(req);
 
         var created = groupService.createGroup(createGroupRequest,currentUserId);
         return ResponseEntity.status(201).body(fromGroupToDTO(created));
@@ -44,9 +42,7 @@ public class GroupController {
             description = "Позволяет текущему аутентифицированному пользователю присоединиться к группе, используя уникальный код группы.")
     public ResponseEntity<String> joinGroup(@PathVariable String uniqueCode,
                                             HttpServletRequest req) {
-        var authentication = (Authentication) req.getUserPrincipal();
-        var jwt = (Jwt) authentication.getPrincipal();
-        String currentUserId = jwt.getClaim("sub");
+        var currentUserId = getCurrentUserId(req);
 
         groupService.joinGroup(uniqueCode, currentUserId);
         return ResponseEntity.status(201).body("Success!");
@@ -57,9 +53,7 @@ public class GroupController {
             description = "Позволяет аутентифицированному владельцу группы, закрыть ее")
     public ResponseEntity<String> closeGroup(@PathVariable Long groupId,
                                              HttpServletRequest req) {
-        var authentication = (Authentication) req.getUserPrincipal();
-        var jwt = (Jwt) authentication.getPrincipal();
-        String currentUserId = jwt.getClaim("sub");
+        var currentUserId = getCurrentUserId(req);
 
         groupService.closeGroup(groupId, currentUserId);
         return ResponseEntity.status(201).body("Success!");
@@ -70,9 +64,8 @@ public class GroupController {
             description = "Позволяет аутентифицированному владельцу группы, удалить ее.")
     public ResponseEntity<String> deleteGroup(@PathVariable Long groupId,
                                               HttpServletRequest req) {
-        var authentication = (Authentication) req.getUserPrincipal();
-        var jwt = (Jwt) authentication.getPrincipal();
-        String currentUserId = jwt.getClaim("sub");
+        var currentUserId = getCurrentUserId(req);
+
         groupService.deleteGroup(groupId, currentUserId);
         return ResponseEntity.status(201).body("Success!");
     }
@@ -81,11 +74,9 @@ public class GroupController {
     @Operation(summary = "Получить группы по пользователю",
             description = "Получить группы, в которых состоит текущий пользователь. Получить свои группы может только  аутентифицированный пользователь.")
     public ResponseEntity<List<GroupDTO>> getMyGrouos(HttpServletRequest req) {
-        var authentication = (Authentication) req.getUserPrincipal();
-        var jwt = (Jwt) authentication.getPrincipal();
-        String userId = jwt.getClaim("sub");
+        var currentUserId = getCurrentUserId(req);
 
-        var toReturn = groupService.getGroupsByUserId(userId).stream()
+        var toReturn = groupService.getGroupsByUserId(currentUserId).stream()
                 .map(this::fromGroupToDTO).toList();
 
         return ResponseEntity.status(201).body(toReturn);
@@ -97,9 +88,7 @@ public class GroupController {
                     "Получить список пользователей может только  аутентифицированный пользователь член этой группы.")
     public ResponseEntity<List<UserInsensitiveInfoDTO>> getGroupMembers(@PathVariable Long groupId,
                                                                         HttpServletRequest req) {
-        var authentication = (Authentication) req.getUserPrincipal();
-        var jwt = (Jwt) authentication.getPrincipal();
-        String currentUserId = jwt.getClaim("sub");
+        var currentUserId = getCurrentUserId(req);
 
         var members = groupService.getMembersOfGroup(groupId, currentUserId).stream().map(this::fromUserToDTO).toList();
         return ResponseEntity.status(201).body(members);
@@ -112,9 +101,7 @@ public class GroupController {
     public ResponseEntity<String> deleteGroupMembers(@PathVariable Long groupId,
                                                      @PathVariable String userId,
                                                      HttpServletRequest req) {
-        var authentication = (Authentication) req.getUserPrincipal();
-        var jwt = (Jwt) authentication.getPrincipal();
-        String currentUserId = jwt.getClaim("sub");
+        var currentUserId = getCurrentUserId(req);
 
         groupService.deleteMembersOfGroup(groupId, userId, currentUserId);
         return ResponseEntity.status(201).body("Success!!!");
@@ -125,14 +112,23 @@ public class GroupController {
             description = "Получить группу по id " +
                     "Получить группу может только  аутентифицированный пользователь член этой группы.")
     public Group getGroupById(@PathVariable Long groupId, HttpServletRequest req) {
-        var authentication = (Authentication) req.getUserPrincipal();
-        var jwt = (Jwt) authentication.getPrincipal();
-        String currentUserId = jwt.getClaim("sub");
+        var currentUserId = getCurrentUserId(req);
+
         return groupService.getGroupByGroupId(groupId, currentUserId);
     }
 
-    private GroupDTO fromGroupToDTO(Group group) {return modelMapper.map(group, GroupDTO.class);}
+    private GroupDTO fromGroupToDTO(Group group) {
+        return modelMapper.map(group, GroupDTO.class);
+    }
 
-    private UserInsensitiveInfoDTO fromUserToDTO(User user) {return modelMapper.map(user, UserInsensitiveInfoDTO.class);}
+    private UserInsensitiveInfoDTO fromUserToDTO(User user) {
+        return modelMapper.map(user, UserInsensitiveInfoDTO.class);
+    }
+
+    private String getCurrentUserId(HttpServletRequest req) {
+        var authentication = (Authentication) req.getUserPrincipal();
+        var jwt = (Jwt) authentication.getPrincipal();
+        return jwt.getClaim("sub");
+    }
 }
 

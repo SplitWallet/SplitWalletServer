@@ -47,9 +47,7 @@ public class ExpenseController {
                     @PathVariable Long groupId,
                     HttpServletRequest req
             ) {
-        var authentication = (Authentication) req.getUserPrincipal();
-        var jwt = (Jwt) authentication.getPrincipal();
-        String currentUserId = jwt.getClaim("sub");
+        var currentUserId = getCurrentUserId(req);
 
         List<Expense> expenses = expenseService.getExpenses(currentUserId, groupId);
         List<ExpenseDto> expenseDtos = expenses.stream()
@@ -70,12 +68,9 @@ public class ExpenseController {
             (
                     @PathVariable Long groupId,
                     @RequestBody @Valid CreateExpenseRequest createExpenseRequest,
-                    /*@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,*/
                     HttpServletRequest req
             ) {
-        var authentication = (Authentication) req.getUserPrincipal();
-        var jwt = (Jwt) authentication.getPrincipal();
-        String currentUserId = jwt.getClaim("sub");
+        var currentUserId = getCurrentUserId(req);
 
         var group = multiServiceClient.getGroupById(groupId);
         var returned = expenseService.createExpense(createExpenseRequest, currentUserId, group);
@@ -94,9 +89,7 @@ public class ExpenseController {
                     @PathVariable Long expenseId,
                     HttpServletRequest req
             ) {
-        var authentication = (Authentication) req.getUserPrincipal();
-        var jwt = (Jwt) authentication.getPrincipal();
-        String currentUserId = jwt.getClaim("sub");
+        var currentUserId = getCurrentUserId(req);
 
         expenseService.deleteExpense(expenseId, currentUserId, groupId);
         return ResponseEntity.status(201).body("Success!");
@@ -115,9 +108,8 @@ public class ExpenseController {
                     @RequestBody @Valid UpdateExpenseRequest requests,
                     HttpServletRequest req
             ) {
-        var authentication = (Authentication) req.getUserPrincipal();
-        var jwt = (Jwt) authentication.getPrincipal();
-        String currentUserId = jwt.getClaim("sub");
+
+        var currentUserId = getCurrentUserId(req);
 
         var updatedParticipants = expenseService.updateExpense(expenseId, requests, currentUserId, groupId);
         return ResponseEntity.status(201).body(fromExpenseToDTO(updatedParticipants));
@@ -135,6 +127,14 @@ public class ExpenseController {
         return expenseDto;
     }
 
-    private ExpenseDto fromExpenseToDTO(Expense expense) {return modelMapper.map(expense, ExpenseDto.class);}
+    private ExpenseDto fromExpenseToDTO(Expense expense) {
+        return modelMapper.map(expense, ExpenseDto.class);
+    }
+
+    private String getCurrentUserId(HttpServletRequest req) {
+        var authentication = (Authentication) req.getUserPrincipal();
+        var jwt = (Jwt) authentication.getPrincipal();
+        return jwt.getClaim("sub");
+    }
 
 }
